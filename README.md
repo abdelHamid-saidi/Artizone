@@ -28,8 +28,8 @@ Voir les README de chaque sous-dossier :
 
 ## 👥 Équipe
 
-- **SAIDI Abdelhamid** – Développeur Web / Backend
-- **KHINOUCHE Mehdi** – Développeur Mobile / UX
+- **SAIDI Abdelhamid** – Développeur Full-stack / Mobile
+- **KHINOUCHE Mehdi** – Développeur Full-stack / Mobile
 
 ## 📄 Licence
 
