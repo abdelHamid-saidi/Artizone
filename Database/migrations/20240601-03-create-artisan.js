@@ -7,6 +7,8 @@ module.exports = {
       telephone: Sequelize.STRING,
       langue: Sequelize.STRING,
       noteMoyenne: Sequelize.FLOAT,
+      ville: Sequelize.STRING,
+      pays: Sequelize.STRING,
       createdAt: { allowNull: false, type: Sequelize.DATE },
       updatedAt: { allowNull: false, type: Sequelize.DATE }
     });

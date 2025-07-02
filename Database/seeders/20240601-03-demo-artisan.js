@@ -12,13 +12,13 @@ module.exports = {
   up: async (queryInterface) => {
     const now = new Date();
     await queryInterface.bulkInsert('artisans', [
-      { id: artisanIds[0], nom: 'Jean Plombier', telephone: '0700000001', langue: 'fr', noteMoyenne: 4.8, createdAt: now, updatedAt: now },
-      { id: artisanIds[1], nom: 'Sophie Electricienne', telephone: '0700000002', langue: 'fr', noteMoyenne: 4.6, createdAt: now, updatedAt: now },
-      { id: artisanIds[2], nom: 'Karim Chauffagiste', telephone: '0700000003', langue: 'fr', noteMoyenne: 4.7, createdAt: now, updatedAt: now },
-      { id: artisanIds[3], nom: 'Lucie Menuisière', telephone: '0700000004', langue: 'fr', noteMoyenne: 4.9, createdAt: now, updatedAt: now },
-      { id: artisanIds[4], nom: 'Paul Maçon', telephone: '0700000005', langue: 'fr', noteMoyenne: 4.5, createdAt: now, updatedAt: now },
-      { id: artisanIds[5], nom: 'Nadia Peintre', telephone: '0700000006', langue: 'fr', noteMoyenne: 4.4, createdAt: now, updatedAt: now },
-      { id: artisanIds[6], nom: 'Olivier Serrurier', telephone: '0700000007', langue: 'fr', noteMoyenne: 4.3, createdAt: now, updatedAt: now }
+      { id: artisanIds[0], nom: 'Jean Plombier', telephone: '0700000001', langue: 'fr', noteMoyenne: 4.8, ville: 'Paris', pays: 'France', createdAt: now, updatedAt: now },
+      { id: artisanIds[1], nom: 'Sophie Electricienne', telephone: '0700000002', langue: 'fr', noteMoyenne: 4.6, ville: 'Lyon', pays: 'France', createdAt: now, updatedAt: now },
+      { id: artisanIds[2], nom: 'Karim Chauffagiste', telephone: '0700000003', langue: 'fr', noteMoyenne: 4.7, ville: 'Lille', pays: 'France', createdAt: now, updatedAt: now },
+      { id: artisanIds[3], nom: 'Lucie Menuisière', telephone: '0700000004', langue: 'fr', noteMoyenne: 4.9, ville: 'Bordeaux', pays: 'France', createdAt: now, updatedAt: now },
+      { id: artisanIds[4], nom: 'Paul Maçon', telephone: '0700000005', langue: 'fr', noteMoyenne: 4.5, ville: 'Nice', pays: 'France', createdAt: now, updatedAt: now },
+      { id: artisanIds[5], nom: 'Nadia Peintre', telephone: '0700000006', langue: 'fr', noteMoyenne: 4.4, ville: 'Nantes', pays: 'France', createdAt: now, updatedAt: now },
+      { id: artisanIds[6], nom: 'Olivier Serrurier', telephone: '0700000007', langue: 'fr', noteMoyenne: 4.3, ville: 'Marseille', pays: 'France', createdAt: now, updatedAt: now }
     ], {});
   },
   down: async (queryInterface) => {

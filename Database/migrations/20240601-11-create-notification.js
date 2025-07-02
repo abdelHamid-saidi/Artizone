@@ -7,7 +7,8 @@ module.exports = {
       contenu: Sequelize.STRING,
       dateEnvoi: Sequelize.DATE,
       statut: Sequelize.STRING,
-      particulierId: { type: Sequelize.UUID, allowNull: false, references: { model: 'particuliers', key: 'id' }, onDelete: 'CASCADE' },
+      particulierId: { type: Sequelize.UUID, allowNull: true, references: { model: 'particuliers', key: 'id' }, onDelete: 'SET NULL' },
+      administrateurId: { type: Sequelize.UUID, allowNull: true, references: { model: 'administrateurs', key: 'id' }, onDelete: 'SET NULL' },
       createdAt: { allowNull: false, type: Sequelize.DATE },
       updatedAt: { allowNull: false, type: Sequelize.DATE }
     });

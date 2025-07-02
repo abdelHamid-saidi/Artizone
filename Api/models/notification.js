@@ -5,11 +5,13 @@ module.exports = (sequelize, DataTypes) => {
     contenu: DataTypes.STRING,
     dateEnvoi: DataTypes.DATE,
     statut: DataTypes.STRING,
-    particulierId: { type: DataTypes.UUID, allowNull: false }
+    particulierId: { type: DataTypes.UUID, allowNull: true },
+    administrateurId: { type: DataTypes.UUID, allowNull: true }
   }, { tableName: 'notifications' });
 
   Notification.associate = models => {
     Notification.belongsTo(models.Particulier, { foreignKey: 'particulierId' });
+    Notification.belongsTo(models.Administrateur, { foreignKey: 'administrateurId' });
   };
 
   return Notification;

@@ -5,7 +5,7 @@ const { validationResult } = require('express-validator');
 // Obtenir tous les artisans avec pagination et filtres
 exports.getAllArtisans = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search, noteMin, langue } = req.query;
+    const { page = 1, limit = 10, search, noteMin, langue, ville } = req.query;
     const offset = (page - 1) * limit;
     
     const whereClause = {};
@@ -18,13 +18,17 @@ exports.getAllArtisans = async (req, res) => {
     if (langue) {
       whereClause.langue = langue;
     }
+    if (ville) {
+      whereClause.ville = { [Op.like]: `%${ville}%` };
+    }
 
     const artisans = await Artisan.findAndCountAll({
       where: whereClause,
       include: [
-        { model: AdresseArtisan, as: 'adresses' },
+        { model: AdresseArtisan, as: 'AdresseArtisans' },
         { model: Service, as: 'services' },
-        { model: Disponibilite, as: 'disponibilites' }
+        { model: Disponibilite, as: 'disponibilites' },
+        { model: Avis, as: 'avis' }
       ],
       limit: parseInt(limit),
       offset: parseInt(offset),
@@ -47,7 +51,7 @@ exports.getArtisanById = async (req, res) => {
   try {
     const artisan = await Artisan.findByPk(req.params.id, {
       include: [
-        { model: AdresseArtisan, as: 'adresses' },
+        { model: AdresseArtisan, as: 'AdresseArtisans' },
         { model: Service, as: 'services' },
         { model: Disponibilite, as: 'disponibilites' },
         { model: Avis, as: 'avis' }
@@ -121,7 +125,7 @@ exports.getArtisansByService = async (req, res) => {
           as: 'services',
           where: { id: serviceId }
         },
-        { model: AdresseArtisan, as: 'adresses' },
+        { model: AdresseArtisan, as: 'AdresseArtisans' },
         { model: Disponibilite, as: 'disponibilites' }
       ]
     });

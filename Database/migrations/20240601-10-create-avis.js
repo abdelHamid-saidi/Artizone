@@ -6,6 +6,7 @@ module.exports = {
       note: Sequelize.INTEGER,
       commentaire: Sequelize.STRING,
       date: Sequelize.DATE,
+      particulierId: { type: Sequelize.UUID, allowNull: true, references: { model: 'particuliers', key: 'id' }, onDelete: 'SET NULL' },
       commandeId: { type: Sequelize.UUID, allowNull: false, references: { model: 'commandes', key: 'id' }, onDelete: 'CASCADE' },
       createdAt: { allowNull: false, type: Sequelize.DATE },
       updatedAt: { allowNull: false, type: Sequelize.DATE }

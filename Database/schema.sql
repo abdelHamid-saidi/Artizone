@@ -109,6 +109,8 @@ CREATE TABLE IF NOT EXISTS `adresses_particulier` (
   `ville` varchar(100) DEFAULT NULL,
   `codePostal` varchar(20) DEFAULT NULL,
   `pays` varchar(50) DEFAULT NULL,
+  `latitude` float DEFAULT NULL,
+  `longitude` float DEFAULT NULL,
   `particulierId` char(36) NOT NULL,
   `createdAt` datetime NOT NULL,
   `updatedAt` datetime NOT NULL,
