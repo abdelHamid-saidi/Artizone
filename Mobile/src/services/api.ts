@@ -1,4 +1,5 @@
 import { API_CONFIG, API_TIMEOUT, DEFAULT_HEADERS } from '../config/api';
+import { storageService } from './storage';
 
 // Types pour l'authentification
 export interface LoginCredentials {
@@ -31,6 +32,33 @@ export interface RegisterResponse {
   token: string;
   role: 'particulier' | 'admin';
   user: UserInfo;
+}
+
+// Types pour les notifications
+export interface Notification {
+  id: string;
+  type: string;
+  contenu: string;
+  dateEnvoi: string;
+  statut: 'lu' | 'non_lu';
+  particulierId: string;
+  administrateurId?: string;
+  Particulier?: {
+    id: string;
+    nom: string;
+    email: string;
+  };
+}
+
+export interface NotificationsResponse {
+  success: boolean;
+  data: Notification[];
+}
+
+export interface NotificationUpdateResponse {
+  success: boolean;
+  message: string;
+  data?: Notification;
 }
 
 // Fonction utilitaire pour faire des requêtes API avec timeout
@@ -298,6 +326,343 @@ export const authService = {
   register: async (userData: RegisterData): Promise<RegisterResponse> => {
     console.log('🔄 === INSCRIPTION LEGACY (redirection vers particulier) ===');
     return authService.registerParticulier(userData);
+  },
+};
+
+// ===== SERVICE DE PROFIL =====
+
+// Types pour le profil
+export interface ProfileData {
+  nom?: string;
+  email?: string;
+  telephone?: string;
+}
+
+export interface ProfileResponse {
+  user: {
+    id: string | number;
+    nom: string;
+    email: string;
+    telephone?: string;
+    role: 'particulier' | 'admin';
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+
+export interface UpdateProfileResponse {
+  message: string;
+  user: {
+    id: string | number;
+    nom: string;
+    email: string;
+    telephone?: string;
+    role: 'particulier' | 'admin';
+    updatedAt: string;
+  };
+}
+
+export interface ChangePasswordData {
+  ancienMotDePasse: string;
+  nouveauMotDePasse: string;
+}
+
+// Fonction utilitaire pour obtenir le token d'authentification
+const getAuthToken = async (): Promise<string> => {
+  try {
+    const token = await storageService.getAuthToken();
+    if (!token) {
+      throw new Error('Token d\'authentification non trouvé');
+    }
+    return token;
+  } catch (error) {
+    console.error('❌ Erreur récupération token:', error);
+    throw new Error('Session expirée. Veuillez vous reconnecter.');
+  }
+};
+
+// Service de profil
+export const profileService = {
+  // Récupérer le profil utilisateur
+  getProfile: async (): Promise<ProfileResponse> => {
+    console.log('👤 === RÉCUPÉRATION PROFIL ===');
+    
+    try {
+      const token = await getAuthToken();
+      
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.API_BASE_URL}/auth/profile`,
+        {
+          method: 'GET',
+          headers: {
+            ...DEFAULT_HEADERS,
+            'Authorization': `Bearer ${token}`
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Erreur API:', {
+          status: response.status,
+          error: errorData
+        });
+        throw new Error(errorData.error || 'Erreur lors de la récupération du profil');
+      }
+
+      const data = await response.json();
+      console.log('✅ Profil récupéré avec succès:', {
+        userId: data.user?.id,
+        nom: data.user?.nom,
+        role: data.user?.role
+      });
+      
+      return data;
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.error('⏰ Timeout de la requête de récupération profil');
+        throw new Error('Délai d\'attente dépassé. Vérifiez votre connexion internet.');
+      }
+      console.error('❌ Erreur récupération profil:', error);
+      throw error;
+    }
+  },
+
+  // Mettre à jour le profil utilisateur
+  updateProfile: async (profileData: ProfileData): Promise<UpdateProfileResponse> => {
+    console.log('✏️ === MISE À JOUR PROFIL ===');
+    console.log('📝 Données à mettre à jour:', {
+      nom: profileData.nom,
+      email: profileData.email,
+      telephone: profileData.telephone
+    });
+    
+    try {
+      const token = await getAuthToken();
+      
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.API_BASE_URL}/auth/profile`,
+        {
+          method: 'PUT',
+          headers: {
+            ...DEFAULT_HEADERS,
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(profileData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Erreur API:', {
+          status: response.status,
+          error: errorData
+        });
+        throw new Error(errorData.error || 'Erreur lors de la mise à jour du profil');
+      }
+
+      const data = await response.json();
+      console.log('✅ Profil mis à jour avec succès:', {
+        message: data.message,
+        userId: data.user?.id,
+        nom: data.user?.nom
+      });
+      
+      return data;
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.error('⏰ Timeout de la requête de mise à jour profil');
+        throw new Error('Délai d\'attente dépassé. Vérifiez votre connexion internet.');
+      }
+      console.error('❌ Erreur mise à jour profil:', error);
+      throw error;
+    }
+  },
+
+  // Changer le mot de passe
+  changePassword: async (passwordData: ChangePasswordData): Promise<{ message: string }> => {
+    console.log('🔐 === CHANGEMENT MOT DE PASSE ===');
+    console.log('📝 Données reçues:', {
+      ancienMotDePasse: passwordData.ancienMotDePasse ? '[MASQUÉ]' : 'NON_FOURNI',
+      nouveauMotDePasse: passwordData.nouveauMotDePasse ? '[MASQUÉ]' : 'NON_FOURNI'
+    });
+    
+    try {
+      const token = await getAuthToken();
+      
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.API_BASE_URL}/auth/profile/password`,
+        {
+          method: 'PUT',
+          headers: {
+            ...DEFAULT_HEADERS,
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(passwordData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Erreur API:', {
+          status: response.status,
+          error: errorData
+        });
+        throw new Error(errorData.error || 'Erreur lors du changement de mot de passe');
+      }
+
+      const data = await response.json();
+      console.log('✅ Mot de passe changé avec succès:', {
+        message: data.message
+      });
+      
+      return data;
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.error('⏰ Timeout de la requête de changement mot de passe');
+        throw new Error('Délai d\'attente dépassé. Vérifiez votre connexion internet.');
+      }
+      console.error('❌ Erreur changement mot de passe:', error);
+      throw error;
+    }
+  },
+};
+
+// Service de notifications
+export const notificationService = {
+  // Récupérer toutes les notifications d'un particulier
+  getNotifications: async (particulierId: string): Promise<NotificationsResponse> => {
+    console.log('🔔 === RÉCUPÉRATION NOTIFICATIONS ===');
+    console.log('👤 Particulier ID:', particulierId);
+    
+    try {
+      const token = await getAuthToken();
+      
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.API_BASE_URL}/notifications/particulier/${particulierId}`,
+        {
+          method: 'GET',
+          headers: {
+            ...DEFAULT_HEADERS,
+            'Authorization': `Bearer ${token}`
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Erreur API:', {
+          status: response.status,
+          error: errorData
+        });
+        throw new Error(errorData.error || 'Erreur lors de la récupération des notifications');
+      }
+
+      const data = await response.json();
+      console.log('✅ Notifications récupérées avec succès:', {
+        count: data.data?.length || 0,
+        success: data.success
+      });
+      
+      return data;
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.error('⏰ Timeout de la requête de récupération notifications');
+        throw new Error('Délai d\'attente dépassé. Vérifiez votre connexion internet.');
+      }
+      console.error('❌ Erreur récupération notifications:', error);
+      throw error;
+    }
+  },
+
+  // Marquer une notification comme lue
+  markAsRead: async (notificationId: string): Promise<NotificationUpdateResponse> => {
+    console.log('✅ === MARQUER NOTIFICATION COMME LUE ===');
+    console.log('🔔 Notification ID:', notificationId);
+    
+    try {
+      const token = await getAuthToken();
+      
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.API_BASE_URL}/notifications/${notificationId}/lu`,
+        {
+          method: 'PATCH',
+          headers: {
+            ...DEFAULT_HEADERS,
+            'Authorization': `Bearer ${token}`
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Erreur API:', {
+          status: response.status,
+          error: errorData
+        });
+        throw new Error(errorData.error || 'Erreur lors de la mise à jour de la notification');
+      }
+
+      const data = await response.json();
+      console.log('✅ Notification marquée comme lue:', {
+        message: data.message,
+        success: data.success
+      });
+      
+      return data;
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.error('⏰ Timeout de la requête de mise à jour notification');
+        throw new Error('Délai d\'attente dépassé. Vérifiez votre connexion internet.');
+      }
+      console.error('❌ Erreur mise à jour notification:', error);
+      throw error;
+    }
+  },
+
+  // Marquer toutes les notifications d'un particulier comme lues
+  markAllAsRead: async (particulierId: string): Promise<{ success: boolean; message: string }> => {
+    console.log('✅ === MARQUER TOUTES LES NOTIFICATIONS COMME LUES ===');
+    console.log('👤 Particulier ID:', particulierId);
+    
+    try {
+      const token = await getAuthToken();
+      
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.API_BASE_URL}/notifications/particulier/${particulierId}/lu-toutes`,
+        {
+          method: 'PATCH',
+          headers: {
+            ...DEFAULT_HEADERS,
+            'Authorization': `Bearer ${token}`
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Erreur API:', {
+          status: response.status,
+          error: errorData
+        });
+        throw new Error(errorData.error || 'Erreur lors de la mise à jour des notifications');
+      }
+
+      const data = await response.json();
+      console.log('✅ Toutes les notifications marquées comme lues:', {
+        message: data.message,
+        success: data.success
+      });
+      
+      return data;
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.error('⏰ Timeout de la requête de mise à jour notifications');
+        throw new Error('Délai d\'attente dépassé. Vérifiez votre connexion internet.');
+      }
+      console.error('❌ Erreur mise à jour notifications:', error);
+      throw error;
+    }
   },
 };
 

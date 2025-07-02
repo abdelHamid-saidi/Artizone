@@ -395,4 +395,179 @@ exports.logout = async (req, res) => {
   console.log('✅ Déconnexion réussie (côté client)');
   res.json({ message: 'Déconnexion réussie' });
   console.log('=== FIN DÉCONNEXION ===\n');
+};
+
+// ===== GESTION DU PROFIL =====
+
+exports.getProfile = async (req, res) => {
+  console.log('=== DÉBUT RÉCUPÉRATION PROFIL ===');
+  console.log('Utilisateur demandé:', req.user);
+  
+  try {
+    const { id, role } = req.user;
+    
+    let user;
+    if (role === 'particulier') {
+      user = await Particulier.findByPk(id, {
+        attributes: ['id', 'nom', 'email', 'telephone', 'createdAt', 'updatedAt']
+      });
+    } else if (role === 'admin') {
+      user = await Administrateur.findByPk(id, {
+        attributes: ['id', 'nom', 'email', 'createdAt', 'updatedAt']
+      });
+    }
+    
+    if (!user) {
+      console.log('❌ Utilisateur non trouvé - ID:', id, 'Role:', role);
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+    
+    console.log('✅ Profil récupéré avec succès - ID:', user.id);
+    res.json({ 
+      user: {
+        id: user.id,
+        nom: user.nom,
+        email: user.email,
+        telephone: user.telephone || null,
+        role: role,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      }
+    });
+  } catch (err) {
+    console.error('❌ Erreur récupération profil:', err);
+    res.status(500).json({ error: 'Erreur lors de la récupération du profil' });
+  }
+  console.log('=== FIN RÉCUPÉRATION PROFIL ===\n');
+};
+
+exports.updateProfile = async (req, res) => {
+  console.log('=== DÉBUT MISE À JOUR PROFIL ===');
+  console.log('Utilisateur:', req.user);
+  console.log('Données à mettre à jour:', { 
+    nom: req.body.nom, 
+    email: req.body.email, 
+    telephone: req.body.telephone 
+  });
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log('❌ Erreurs de validation:', errors.array());
+    return res.status(400).json({ 
+      error: 'Données invalides',
+      details: errors.array() 
+    });
+  }
+
+  try {
+    const { id, role } = req.user;
+    const { nom, email, telephone } = req.body;
+    
+    let user;
+    if (role === 'particulier') {
+      user = await Particulier.findByPk(id);
+    } else if (role === 'admin') {
+      user = await Administrateur.findByPk(id);
+    }
+    
+    if (!user) {
+      console.log('❌ Utilisateur non trouvé - ID:', id, 'Role:', role);
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+    
+    // Vérifier si l'email est déjà utilisé par un autre utilisateur
+    if (email && email !== user.email) {
+      let existingUser;
+      if (role === 'particulier') {
+        existingUser = await Particulier.findOne({ where: { email } });
+      } else if (role === 'admin') {
+        existingUser = await Administrateur.findOne({ where: { email } });
+      }
+      
+      if (existingUser) {
+        console.log('❌ Email déjà utilisé:', email);
+        return res.status(409).json({ error: 'Cette adresse email est déjà utilisée' });
+      }
+    }
+    
+    // Mettre à jour les champs fournis
+    const updateData = {};
+    if (nom !== undefined) updateData.nom = nom;
+    if (email !== undefined) updateData.email = email;
+    if (telephone !== undefined && role === 'particulier') updateData.telephone = telephone;
+    
+    await user.update(updateData);
+    
+    console.log('✅ Profil mis à jour avec succès - ID:', user.id);
+    res.json({ 
+      message: 'Profil mis à jour avec succès',
+      user: {
+        id: user.id,
+        nom: user.nom,
+        email: user.email,
+        telephone: user.telephone || null,
+        role: role,
+        updatedAt: user.updatedAt
+      }
+    });
+  } catch (err) {
+    console.error('❌ Erreur mise à jour profil:', err);
+    res.status(500).json({ error: 'Erreur lors de la mise à jour du profil' });
+  }
+  console.log('=== FIN MISE À JOUR PROFIL ===\n');
+};
+
+exports.changePassword = async (req, res) => {
+  console.log('=== DÉBUT CHANGEMENT MOT DE PASSE ===');
+  console.log('Utilisateur:', req.user);
+  console.log('Données reçues:', { 
+    ancienMotDePasse: req.body.ancienMotDePasse ? '[MASQUÉ]' : 'NON_FOURNI',
+    nouveauMotDePasse: req.body.nouveauMotDePasse ? '[MASQUÉ]' : 'NON_FOURNI'
+  });
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log('❌ Erreurs de validation:', errors.array());
+    return res.status(400).json({ 
+      error: 'Données invalides',
+      details: errors.array() 
+    });
+  }
+
+  try {
+    const { id, role } = req.user;
+    const { ancienMotDePasse, nouveauMotDePasse } = req.body;
+    
+    let user;
+    if (role === 'particulier') {
+      user = await Particulier.findByPk(id);
+    } else if (role === 'admin') {
+      user = await Administrateur.findByPk(id);
+    }
+    
+    if (!user) {
+      console.log('❌ Utilisateur non trouvé - ID:', id, 'Role:', role);
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+    
+    // Vérifier l'ancien mot de passe
+    const validOldPassword = await bcrypt.compare(ancienMotDePasse, user.motDePasse);
+    if (!validOldPassword) {
+      console.log('❌ Ancien mot de passe incorrect - ID:', user.id);
+      return res.status(401).json({ error: 'Ancien mot de passe incorrect' });
+    }
+    
+    // Hasher le nouveau mot de passe
+    const newHash = await bcrypt.hash(nouveauMotDePasse, parseInt(process.env.BCRYPT_SALT || '10'));
+    
+    // Mettre à jour le mot de passe
+    await user.update({ motDePasse: newHash });
+    
+    console.log('✅ Mot de passe changé avec succès - ID:', user.id);
+    res.json({ message: 'Mot de passe changé avec succès' });
+  } catch (err) {
+    console.error('❌ Erreur changement mot de passe:', err);
+    res.status(500).json({ error: 'Erreur lors du changement de mot de passe' });
+  }
+  console.log('=== FIN CHANGEMENT MOT DE PASSE ===\n');
 }; 

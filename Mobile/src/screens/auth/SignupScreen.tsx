@@ -11,6 +11,7 @@ const SignupScreen = ({ navigation }: any) => {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [telephone, setTelephone] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -27,6 +28,10 @@ const SignupScreen = ({ navigation }: any) => {
       Alert.alert('Erreur', 'Veuillez saisir une adresse email valide');
       return false;
     }
+    if (telephone.trim() && !isValidPhoneNumber(telephone.trim())) {
+      Alert.alert('Erreur', 'Veuillez saisir un numéro de téléphone valide');
+      return false;
+    }
     if (password.length < 6) {
       Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
       return false;
@@ -36,6 +41,74 @@ const SignupScreen = ({ navigation }: any) => {
       return false;
     }
     return true;
+  };
+
+  const isValidPhoneNumber = (phone: string) => {
+    // Supprimer tous les espaces, tirets et points pour la validation
+    const cleanedPhone = phone.replace(/[\s\-\.]/g, '');
+    
+    // Validation pour les numéros français
+    // Formats acceptés :
+    // - +33XXXXXXXXX (format international)
+    // - 0033XXXXXXXXX (format international avec 00)
+    // - 0XXXXXXXXX (format national)
+    // - 33XXXXXXXXX (format international sans +)
+    
+    const phoneRegex = /^(?:(?:\+|00)33|0|33)\s*[1-9](?:[\s.-]*\d{2}){4}$/;
+    
+    // Vérification de base avec regex
+    if (!phoneRegex.test(phone)) {
+      return false;
+    }
+    
+    // Vérification de la longueur après nettoyage
+    const digitsOnly = cleanedPhone.replace(/\D/g, '');
+    
+    // Pour un numéro français :
+    // - Avec indicatif pays (33) : 11 chiffres (33 + 9 chiffres)
+    // - Sans indicatif pays : 10 chiffres (0 + 9 chiffres)
+    if (digitsOnly.length === 10) {
+      // Format 0XXXXXXXXX
+      return digitsOnly.startsWith('0');
+    } else if (digitsOnly.length === 11) {
+      // Format 33XXXXXXXXX ou +33XXXXXXXXX
+      return digitsOnly.startsWith('33');
+    } else if (digitsOnly.length === 12) {
+      // Format 0033XXXXXXXXX
+      return digitsOnly.startsWith('0033');
+    }
+    
+    return false;
+  };
+
+  const formatPhoneNumber = (text: string) => {
+    // Supprimer tous les caractères non autorisés sauf +, espaces, tirets et points
+    let cleaned = text.replace(/[^\d+\s\-\.]/g, '');
+    
+    // Limiter la longueur totale
+    if (cleaned.length > 15) {
+      cleaned = cleaned.substring(0, 15);
+    }
+    
+    // Formatage automatique pour améliorer la lisibilité
+    // Exemple : +33 6 12 34 56 78
+    if (cleaned.startsWith('+33')) {
+      // Garder le format +33 X XX XX XX XX
+      return cleaned.replace(/(\+33)(\d{1})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5 $6');
+    } else if (cleaned.startsWith('0033')) {
+      // Convertir 0033 en +33
+      cleaned = '+33' + cleaned.substring(4);
+      return cleaned.replace(/(\+33)(\d{1})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5 $6');
+    } else if (cleaned.startsWith('33')) {
+      // Ajouter le + devant 33
+      cleaned = '+' + cleaned;
+      return cleaned.replace(/(\+33)(\d{1})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5 $6');
+    } else if (cleaned.startsWith('0')) {
+      // Format national français
+      return cleaned.replace(/(0)(\d{1})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5 $6');
+    }
+    
+    return cleaned;
   };
 
   const handleSignup = async () => {
@@ -50,6 +123,7 @@ const SignupScreen = ({ navigation }: any) => {
       const response = await authService.registerParticulier({
         nom: name.trim(),
         email: email.trim(),
+        telephone: telephone.trim() || undefined, // Envoyer undefined si vide
         motDePasse: password,
       });
 
@@ -63,7 +137,8 @@ const SignupScreen = ({ navigation }: any) => {
       console.log('Inscription réussie:', {
         role: response.role,
         userId: response.user?.id,
-        email: response.user?.email
+        email: response.user?.email,
+        telephone: response.user?.telephone
       });
 
       // Redirection vers Home
@@ -109,6 +184,15 @@ const SignupScreen = ({ navigation }: any) => {
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
+          editable={!loading}
+        />
+        <TextInput
+          style={sharedStyles.input}
+          placeholder="Téléphone (ex: +33 6 12 34 56 78 ou 06 12 34 56 78)"
+          placeholderTextColor="#B0B3C6"
+          value={telephone}
+          onChangeText={(text) => setTelephone(formatPhoneNumber(text))}
+          keyboardType="phone-pad"
           editable={!loading}
         />
         <View style={sharedStyles.passwordContainer}>

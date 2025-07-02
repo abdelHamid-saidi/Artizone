@@ -17,6 +17,7 @@ const paiementRoutes = require('./routes/paiement.routes');
 const avisRoutes = require('./routes/avis.routes');
 const disponibiliteRoutes = require('./routes/disponibilite.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
+const notificationRoutes = require('./routes/notification.routes');
 
 const app = express();
 
@@ -159,6 +160,7 @@ app.use('/api/paiements', paiementRoutes);
 app.use('/api/avis', avisRoutes);
 app.use('/api/disponibilites', disponibiliteRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Route de santé
 app.get('/health', (req, res) => {
