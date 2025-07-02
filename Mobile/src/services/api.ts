@@ -13,17 +13,24 @@ export interface RegisterData {
   telephone?: string;
 }
 
+export interface UserInfo {
+  id: string | number;
+  nom: string;
+  email: string;
+  telephone?: string;
+}
+
 export interface AuthResponse {
   token: string;
   role: 'particulier' | 'admin';
+  user: UserInfo;
 }
 
 export interface RegisterResponse {
   message: string;
-  user: {
-    id: number;
-    email: string;
-  };
+  token: string;
+  role: 'particulier' | 'admin';
+  user: UserInfo;
 }
 
 // Fonction utilitaire pour faire des requêtes API avec timeout

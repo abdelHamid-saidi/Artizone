@@ -33,7 +33,17 @@ const LoginScreen = ({ navigation }: any) => {
       });
 
       // Sauvegarder le token et les informations utilisateur
-      await storageService.saveAuthToken(response.token, response.role);
+      await storageService.saveAuthToken(
+        response.token, 
+        response.role, 
+        response.user?.id?.toString()
+      );
+
+      console.log('Connexion réussie:', {
+        role: response.role,
+        userId: response.user?.id,
+        email: response.user?.email
+      });
 
       // Redirection vers Home
       navigation.navigate('Home');

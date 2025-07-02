@@ -4,6 +4,7 @@ import { AntDesign, Feather } from '@expo/vector-icons';
 import sharedStyles from '../styles/shared';
 import Checkbox from '../components/Checkbox';
 import { authService, handleApiError } from '../services/api';
+import { storageService } from '../services/storage';
 
 const SignupScreen = ({ navigation }: any) => {
   const [policyAccepted, setPolicyAccepted] = useState(false);
@@ -50,6 +51,19 @@ const SignupScreen = ({ navigation }: any) => {
         nom: name.trim(),
         email: email.trim(),
         motDePasse: password,
+      });
+
+      // Sauvegarder le token et les informations utilisateur
+      await storageService.saveAuthToken(
+        response.token, 
+        response.role, 
+        response.user?.id?.toString()
+      );
+
+      console.log('Inscription réussie:', {
+        role: response.role,
+        userId: response.user?.id,
+        email: response.user?.email
       });
 
       // Redirection vers Home
