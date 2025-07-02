@@ -66,13 +66,49 @@ export const storageService = {
   // Supprimer les données d'authentification (déconnexion)
   clearAuthData: async () => {
     try {
+      console.log('🗑️ Suppression des données d\'authentification...');
+      
+      // Supprimer toutes les données d'authentification
       await AsyncStorage.multiRemove([
         STORAGE_KEYS.AUTH_TOKEN,
         STORAGE_KEYS.USER_ROLE,
         STORAGE_KEYS.USER_ID,
       ]);
+      
+      // Vérifier que la suppression a bien fonctionné
+      const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      const role = await AsyncStorage.getItem(STORAGE_KEYS.USER_ROLE);
+      const userId = await AsyncStorage.getItem(STORAGE_KEYS.USER_ID);
+      
+      if (token === null && role === null && userId === null) {
+        console.log('✅ Données d\'authentification supprimées avec succès');
+        return true;
+      } else {
+        console.log('❌ Erreur: certaines données n\'ont pas été supprimées');
+        return false;
+      }
     } catch (error) {
-      console.error('Erreur lors de la suppression des données d\'authentification:', error);
+      console.error('❌ Erreur lors de la suppression des données d\'authentification:', error);
+      throw error;
+    }
+  },
+
+  // Fonction de déconnexion complète
+  logout: async () => {
+    try {
+      console.log('🚪 Déconnexion en cours...');
+      const success = await storageService.clearAuthData();
+      
+      if (success) {
+        console.log('✅ Déconnexion réussie');
+        return true;
+      } else {
+        console.log('❌ Échec de la déconnexion');
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors de la déconnexion:', error);
+      return false;
     }
   },
 }; 

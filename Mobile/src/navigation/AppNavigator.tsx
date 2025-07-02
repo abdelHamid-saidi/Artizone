@@ -9,6 +9,12 @@ import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import EmailVerificationScreen from '../screens/EmailVerificationScreen';
 import TabNavigator from './TabNavigator';
 import NotificationsScreen from '../screens/NotificationsScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+import AddressesScreen from '../screens/AddressesScreen';
+import PaymentMethodsScreen from '../screens/PaymentMethodsScreen';
+import PreferencesScreen from '../screens/PreferencesScreen';
+import HelpSupportScreen from '../screens/HelpSupportScreen';
+import AboutScreen from '../screens/AboutScreen';
 import { Dimensions } from 'react-native';
 
 const Stack = createStackNavigator();
@@ -46,6 +52,12 @@ const AppNavigator = () => (
     <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
     <Stack.Screen name="Home" component={TabNavigator} />
     <Stack.Screen name="Notifications" component={NotificationsScreen} />
+    <Stack.Screen name="Profile" component={ProfileScreen} />
+    <Stack.Screen name="Addresses" component={AddressesScreen} />
+    <Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
+    <Stack.Screen name="Preferences" component={PreferencesScreen} />
+    <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
+    <Stack.Screen name="About" component={AboutScreen} />
   </Stack.Navigator>
 );
 

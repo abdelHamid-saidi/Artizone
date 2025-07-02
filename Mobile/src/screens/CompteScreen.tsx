@@ -6,10 +6,34 @@ import { storageService } from '../services/storage';
 import CustomHeader from '../components/CustomHeader';
 
 const CompteScreen = ({ navigation }: any) => {
-  const userData = {
+  const [userInfo, setUserInfo] = React.useState({
     nom: 'Jean Dupont',
     email: 'jean.dupont@email.com',
     telephone: '+33 6 12 34 56 78',
+  });
+
+  React.useEffect(() => {
+    loadUserInfo();
+  }, []);
+
+  const loadUserInfo = async () => {
+    try {
+      // Ici vous pourriez charger les vraies données depuis l'API
+      // Pour l'instant, on utilise des données de démonstration
+      const token = await storageService.getAuthToken();
+      const role = await storageService.getUserRole();
+      
+      if (token && role) {
+        // Données de démonstration - à remplacer par un appel API
+        setUserInfo({
+          nom: 'Jean Dupont',
+          email: 'jean.dupont@email.com',
+          telephone: '+33 6 12 34 56 78',
+        });
+      }
+    } catch (error) {
+      console.error('Erreur chargement utilisateur:', error);
+    }
   };
 
   // Fonction pour générer les initiales
@@ -39,42 +63,42 @@ const CompteScreen = ({ navigation }: any) => {
       titre: 'Informations personnelles',
       icon: 'user',
       color: colors.primary,
-      action: () => {},
+      action: () => navigation.navigate('Profile'),
     },
     {
       id: 2,
       titre: 'Adresses enregistrées',
       icon: 'map-pin',
       color: colors.error,
-      action: () => {},
+      action: () => navigation.navigate('Addresses'),
     },
     {
       id: 3,
       titre: 'Méthodes de paiement',
       icon: 'credit-card',
       color: colors.info,
-      action: () => {},
+      action: () => navigation.navigate('PaymentMethods'),
     },
     {
       id: 4,
       titre: 'Préférences',
       icon: 'settings',
       color: colors.warning,
-      action: () => {},
+      action: () => navigation.navigate('Preferences'),
     },
     {
       id: 5,
       titre: 'Aide et support',
       icon: 'help-circle',
       color: colors.success,
-      action: () => {},
+      action: () => navigation.navigate('HelpSupport'),
     },
     {
       id: 6,
       titre: 'À propos',
       icon: 'info',
       color: colors.primaryGradient,
-      action: () => {},
+      action: () => navigation.navigate('About'),
     },
   ];
 
@@ -92,11 +116,27 @@ const CompteScreen = ({ navigation }: any) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await storageService.clearAuthData();
-              navigation.replace('Login');
+              console.log('🔄 Déconnexion en cours...');
+              
+              // Utiliser la nouvelle fonction de déconnexion
+              const success = await storageService.logout();
+              
+              if (success) {
+                console.log('✅ Déconnexion réussie, navigation vers Login');
+                
+                // Naviguer vers l'écran de connexion
+                // Utiliser reset pour éviter les problèmes de navigation
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: 'Login' }],
+                });
+              } else {
+                console.log('❌ Échec de la déconnexion');
+                Alert.alert('Erreur', 'Impossible de se déconnecter. Veuillez réessayer.');
+              }
             } catch (error) {
-              console.error('Erreur lors de la déconnexion:', error);
-              Alert.alert('Erreur', 'Impossible de se déconnecter');
+              console.error('❌ Erreur lors de la déconnexion:', error);
+              Alert.alert('Erreur', 'Impossible de se déconnecter. Veuillez réessayer.');
             }
           },
         },
@@ -113,6 +153,20 @@ const CompteScreen = ({ navigation }: any) => {
         notificationCount={3}
         onNotificationPress={() => navigation.navigate('Notifications')}
       />
+
+      {/* Profil utilisateur */}
+      <View style={styles.profileSection}>
+        <View style={styles.avatarContainer}>
+          <View style={[styles.avatar, { backgroundColor: getAvatarColor(userInfo.nom) }]}>
+            <Text style={styles.avatarText}>{getInitials(userInfo.nom)}</Text>
+          </View>
+        </View>
+        <View style={styles.profileInfo}>
+          <Text style={styles.userName}>{userInfo.nom}</Text>
+          <Text style={styles.userEmail}>{userInfo.email}</Text>
+          <Text style={styles.userPhone}>{userInfo.telephone}</Text>
+        </View>
+      </View>
 
       {/* Menu */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -134,6 +188,19 @@ const CompteScreen = ({ navigation }: any) => {
             <MaterialIcons name="logout" size={20} color={colors.textInverse} />
             <Text style={styles.logoutText}>Se déconnecter</Text>
           </TouchableOpacity>
+          
+          {/* Bouton de test temporaire */}
+          <TouchableOpacity 
+            style={[styles.logoutButton, { backgroundColor: colors.warning, marginTop: 10 }]} 
+            onPress={async () => {
+              const token = await storageService.getAuthToken();
+              const isAuth = await storageService.isAuthenticated();
+              Alert.alert('Debug', `Token: ${token ? 'Présent' : 'Absent'}\nAuthentifié: ${isAuth ? 'Oui' : 'Non'}`);
+            }}
+          >
+            <MaterialIcons name="bug-report" size={20} color={colors.textInverse} />
+            <Text style={styles.logoutText}>Debug Auth</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -154,6 +221,11 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.borderLight,
   },
   profileSection: {
+    backgroundColor: colors.background,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
     flexDirection: 'row',
     alignItems: 'center',
   },

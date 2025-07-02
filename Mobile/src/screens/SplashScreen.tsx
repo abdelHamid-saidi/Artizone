@@ -61,9 +61,11 @@ const SplashScreen = () => {
         // Navigation automatique après 2 secondes
         setTimeout(() => {
           if (isAuthenticated) {
-            navigation.navigate('Home');
+            console.log('🔐 Utilisateur authentifié, navigation vers Home');
+            navigation.replace('Home');
           } else {
-            navigation.navigate('Landing');
+            console.log('🔓 Utilisateur non authentifié, navigation vers Landing');
+            navigation.replace('Landing');
           }
         }, 3500);
       } catch (error) {
