@@ -102,7 +102,7 @@ const CompteScreen = ({ navigation }: any) => {
     },
   ];
 
-  const handleLogout = async () => {
+   const handleLogout = async () => {
     Alert.alert(
       'Déconnexion',
       'Êtes-vous sûr de vouloir vous déconnecter ?',
@@ -116,26 +116,80 @@ const CompteScreen = ({ navigation }: any) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              console.log('🔄 Déconnexion en cours...');
+              console.log('🔄 === DÉBUT DÉCONNEXION ===');
               
-              // Utiliser la nouvelle fonction de déconnexion
-              const success = await storageService.logout();
+              // Vérifier l'état avant déconnexion
+              const tokenBefore = await storageService.getAuthToken();
+              const isAuthBefore = await storageService.isAuthenticated();
+              console.log('📊 État AVANT déconnexion:', { tokenBefore, isAuthBefore });
               
-              if (success) {
-                console.log('✅ Déconnexion réussie, navigation vers Login');
+              // Essayer la déconnexion
+              console.log('🗑️ Suppression des données...');
+              await storageService.clearAuthData();
+              
+              // Vérifier l'état après déconnexion
+              const tokenAfter = await storageService.getAuthToken();
+              const isAuthAfter = await storageService.isAuthenticated();
+              console.log('📊 État APRÈS déconnexion:', { tokenAfter, isAuthAfter });
+              
+              if (tokenAfter === null && !isAuthAfter) {
+                console.log('✅ Déconnexion réussie !');
                 
-                // Naviguer vers l'écran de connexion
-                // Utiliser reset pour éviter les problèmes de navigation
-                navigation.reset({
-                  index: 0,
-                  routes: [{ name: 'Login' }],
-                });
+                // Essayer différentes méthodes de navigation
+                try {
+                  console.log('🧭 Tentative de navigation vers Login...');
+                  
+                  // Méthode 1: reset
+                  navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'Login' }],
+                  });
+                  
+                  console.log('✅ Navigation reset réussie');
+                } catch (navError) {
+                  console.log('❌ Erreur navigation reset:', navError);
+                  
+                  // Méthode 2: replace
+                  try {
+                    navigation.replace('Login');
+                    console.log('✅ Navigation replace réussie');
+                  } catch (navError2) {
+                    console.log('❌ Erreur navigation replace:', navError2);
+                    
+                    // Méthode 3: navigate
+                    try {
+                      navigation.navigate('Login');
+                      console.log('✅ Navigation navigate réussie');
+                    } catch (navError3) {
+                      console.log('❌ Erreur navigation navigate:', navError3);
+                      
+                      // Méthode 4: Navigation parent (si dans TabNavigator)
+                      try {
+                        const parentNavigation = navigation.getParent();
+                        if (parentNavigation) {
+                          parentNavigation.reset({
+                            index: 0,
+                            routes: [{ name: 'Login' }],
+                          });
+                          console.log('✅ Navigation parent réussie');
+                        } else {
+                          throw new Error('Pas de navigation parent');
+                        }
+                      } catch (navError4) {
+                        console.log('❌ Erreur navigation parent:', navError4);
+                        Alert.alert('Erreur', 'Déconnexion réussie mais problème de navigation. Redémarrez l\'app.');
+                      }
+                    }
+                  }
+                }
               } else {
-                console.log('❌ Échec de la déconnexion');
-                Alert.alert('Erreur', 'Impossible de se déconnecter. Veuillez réessayer.');
+                console.log('❌ Échec de la déconnexion - données encore présentes');
+                Alert.alert('Erreur', 'Impossible de supprimer les données d\'authentification');
               }
+              
+              console.log('🔄 === FIN DÉCONNEXION ===');
             } catch (error) {
-              console.error('❌ Erreur lors de la déconnexion:', error);
+              console.error('❌ Erreur générale lors de la déconnexion:', error);
               Alert.alert('Erreur', 'Impossible de se déconnecter. Veuillez réessayer.');
             }
           },
@@ -143,6 +197,8 @@ const CompteScreen = ({ navigation }: any) => {
       ]
     );
   };
+
+
 
   return (
     <View style={styles.container}>
@@ -154,21 +210,6 @@ const CompteScreen = ({ navigation }: any) => {
         onNotificationPress={() => navigation.navigate('Notifications')}
       />
 
-      {/* Profil utilisateur */}
-      <View style={styles.profileSection}>
-        <View style={styles.avatarContainer}>
-          <View style={[styles.avatar, { backgroundColor: getAvatarColor(userInfo.nom) }]}>
-            <Text style={styles.avatarText}>{getInitials(userInfo.nom)}</Text>
-          </View>
-        </View>
-        <View style={styles.profileInfo}>
-          <Text style={styles.userName}>{userInfo.nom}</Text>
-          <Text style={styles.userEmail}>{userInfo.email}</Text>
-          <Text style={styles.userPhone}>{userInfo.telephone}</Text>
-        </View>
-      </View>
-
-      {/* Menu */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.menuSection}> 
           {menuItems.map((item) => (
@@ -187,19 +228,6 @@ const CompteScreen = ({ navigation }: any) => {
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <MaterialIcons name="logout" size={20} color={colors.textInverse} />
             <Text style={styles.logoutText}>Se déconnecter</Text>
-          </TouchableOpacity>
-          
-          {/* Bouton de test temporaire */}
-          <TouchableOpacity 
-            style={[styles.logoutButton, { backgroundColor: colors.warning, marginTop: 10 }]} 
-            onPress={async () => {
-              const token = await storageService.getAuthToken();
-              const isAuth = await storageService.isAuthenticated();
-              Alert.alert('Debug', `Token: ${token ? 'Présent' : 'Absent'}\nAuthentifié: ${isAuth ? 'Oui' : 'Non'}`);
-            }}
-          >
-            <MaterialIcons name="bug-report" size={20} color={colors.textInverse} />
-            <Text style={styles.logoutText}>Debug Auth</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

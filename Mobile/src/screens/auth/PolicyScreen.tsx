@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
-import sharedStyles from '../styles/shared';
+import sharedStyles from '../../styles/shared';
 
 const PolicyScreen = ({ navigation }: any) => {
   return (

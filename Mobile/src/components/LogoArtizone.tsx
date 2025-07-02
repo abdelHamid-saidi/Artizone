@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
-import shared from '../styles/shared';
+import sharedStyles from '../styles/shared';
 import colors from '../styles/colors';
 
 const LogoArtizone = () => {

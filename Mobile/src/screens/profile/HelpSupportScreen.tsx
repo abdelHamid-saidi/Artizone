@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking } from 'react-native';
 import { AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
-import colors from '../styles/colors';
-import CustomHeader from '../components/CustomHeader';
+import colors from '../../styles/colors';
+import CustomHeader from '../../components/CustomHeader';
 
 const HelpSupportScreen = ({ navigation }: any) => {
   const helpSections = [

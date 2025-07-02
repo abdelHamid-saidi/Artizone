@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import sharedStyles from '../styles/shared';
+import sharedStyles from '../../styles/shared';
 
 const { width } = Dimensions.get('window');
 
@@ -11,12 +11,12 @@ const LandingPage = () => {
   return (
     <View style={sharedStyles.container}>
       <Image
-        source={require('../../assets/landing/frame.png')}
+        source={require('../../../assets/landing/frame.png')}
         style={sharedStyles.waveImage}
         resizeMode="cover"
       />
       <Image
-        source={require('../../assets/landing/landing.png')}
+        source={require('../../../assets/landing/landing.png')}
         style={sharedStyles.illustrationImage}
         resizeMode="contain"
       />

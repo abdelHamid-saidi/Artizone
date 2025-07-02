@@ -2,11 +2,11 @@ import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, Dimensions, Animated, Easing } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import LogoArtizone from '../components/LogoArtizone';
-import Loader from '../components/Loader';
-import shared from '../styles/shared';
-import colors from '../styles/colors';
-import { storageService } from '../services/storage';
+import LogoArtizone from '../../components/LogoArtizone';
+import Loader from '../../components/Loader';
+import sharedStyles from '../../styles/shared';
+import colors from '../../styles/colors';
+import { storageService } from '../../services/storage';
 
 const { height } = Dimensions.get('window');
 

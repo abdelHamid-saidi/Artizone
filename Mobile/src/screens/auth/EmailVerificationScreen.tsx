@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
-import sharedStyles from '../styles/shared';
-import colors from '../styles/colors';
+import sharedStyles from '../../styles/shared';
+import colors from '../../styles/colors';
 
 const EmailVerificationScreen = ({ navigation, route }: any) => {
   const [email] = useState(route.params?.email || 'votre email');
@@ -93,7 +93,7 @@ const EmailVerificationScreen = ({ navigation, route }: any) => {
     <View style={sharedStyles.authContainer}>
       {/* Vague décorative en fond */}
       <Image
-        source={require('../../assets/landing/frame.png')}
+        source={require('../../../assets/landing/frame.png')}
         style={sharedStyles.authWaveImage}
         resizeMode="cover"
       />

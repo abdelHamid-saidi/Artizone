@@ -1,25 +1,45 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { AntDesign, Feather } from '@expo/vector-icons';
-import sharedStyles from '../styles/shared';
-import { authService, handleApiError } from '../services/api';
-import { storageService } from '../services/storage';
+import sharedStyles from '../../styles/shared';
+import Checkbox from '../../components/Checkbox';
+import { authService, handleApiError } from '../../services/api';
+import { storageService } from '../../services/storage';
 
-const LoginScreen = ({ navigation }: any) => {
+const SignupScreen = ({ navigation }: any) => {
+  const [policyAccepted, setPolicyAccepted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    // Validation des champs
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
-      return;
+  const validateForm = () => {
+    if (!name.trim()) {
+      Alert.alert('Erreur', 'Veuillez saisir votre nom');
+      return false;
     }
-
+    if (!email.trim()) {
+      Alert.alert('Erreur', 'Veuillez saisir votre adresse email');
+      return false;
+    }
     if (!email.includes('@')) {
       Alert.alert('Erreur', 'Veuillez saisir une adresse email valide');
+      return false;
+    }
+    if (password.length < 6) {
+      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
+      return false;
+    }
+    if (!policyAccepted) {
+      Alert.alert('Erreur', 'Veuillez accepter la politique de confidentialité');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSignup = async () => {
+    if (!validateForm()) {
       return;
     }
 
@@ -27,7 +47,8 @@ const LoginScreen = ({ navigation }: any) => {
 
     try {
       // Utilisation de l'endpoint particulier séparé
-      const response = await authService.loginParticulier({
+      const response = await authService.registerParticulier({
+        nom: name.trim(),
         email: email.trim(),
         motDePasse: password,
       });
@@ -39,7 +60,7 @@ const LoginScreen = ({ navigation }: any) => {
         response.user?.id?.toString()
       );
 
-      console.log('Connexion réussie:', {
+      console.log('Inscription réussie:', {
         role: response.role,
         userId: response.user?.id,
         email: response.user?.email
@@ -50,7 +71,7 @@ const LoginScreen = ({ navigation }: any) => {
       
     } catch (error) {
       const errorMessage = handleApiError(error);
-      Alert.alert('Erreur de connexion', errorMessage);
+      Alert.alert('Erreur d\'inscription', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -60,7 +81,7 @@ const LoginScreen = ({ navigation }: any) => {
     <View style={sharedStyles.authContainer}>
       {/* Vague décorative en fond */}
       <Image
-        source={require('../../assets/landing/frame.png')}
+        source={require('../../../assets/landing/frame.png')}
         style={sharedStyles.authWaveImage}
         resizeMode="cover"
       />
@@ -70,7 +91,15 @@ const LoginScreen = ({ navigation }: any) => {
         </View>
       </TouchableOpacity>
       <View style={sharedStyles.authContentContainer}>
-        <Text style={sharedStyles.authTitle}>Bon retour !</Text>
+        <Text style={sharedStyles.authTitle}>Créer votre compte</Text>
+        <TextInput
+          style={sharedStyles.input}
+          placeholder="Nom"
+          placeholderTextColor="#B0B3C6"
+          value={name}
+          onChangeText={setName}
+          editable={!loading}
+        />
         <TextInput
           style={sharedStyles.input}
           placeholder="Adresse email"
@@ -83,8 +112,8 @@ const LoginScreen = ({ navigation }: any) => {
           editable={!loading}
         />
         <View style={sharedStyles.passwordContainer}>
-          <TextInput 
-            style={[sharedStyles.input, { marginBottom: 0, flex: 1 }]}
+          <TextInput
+            style={[sharedStyles.input, { marginBottom: 0, flex: 1, borderWidth: 0 }]}
             placeholder="Mot de passe"
             placeholderTextColor="#B0B3C6"
             secureTextEntry={!showPassword}
@@ -104,28 +133,38 @@ const LoginScreen = ({ navigation }: any) => {
             />
           </TouchableOpacity>
         </View>
+        <View style={sharedStyles.policyContainer}>
+          <Checkbox 
+            checked={policyAccepted} 
+            onToggle={() => setPolicyAccepted(!policyAccepted)}
+            disabled={loading}
+          />
+          <Text style={sharedStyles.loginText}>J'ai lu la </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Policy')} disabled={loading}>
+            <Text style={sharedStyles.linkText}>Politique de confidentialité</Text>
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity 
           style={[
-            sharedStyles.primaryButton,
-            { opacity: loading ? 0.7 : 1 }
+            sharedStyles.primaryButton, 
+            { 
+              opacity: (policyAccepted && name.trim() && email.trim() && password.trim() && !loading) ? 1 : 0.5 
+            }
           ]}
-          onPress={handleLogin}
-          disabled={loading}
+          disabled={!(policyAccepted && name.trim() && email.trim() && password.trim()) || loading}
+          onPress={handleSignup}
         >
           {loading ? (
             <ActivityIndicator color="#fff" size="small" />
           ) : (
-            <Text style={sharedStyles.buttonText}>SE CONNECTER</Text>
+            <Text style={sharedStyles.buttonText}>COMMENCER</Text>
           )}
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} disabled={loading}>
-          <Text style={sharedStyles.forgotText}>Mot de passe oublié ?</Text>
         </TouchableOpacity>
         <View style={sharedStyles.bottomContainer}>
           <Text style={sharedStyles.loginText}>
-            Pas de compte ?{' '}
-            <Text style={sharedStyles.linkText} onPress={() => navigation.navigate('Signup')}>
-              S'inscrire
+            Déjà un compte ?{' '}
+            <Text style={sharedStyles.linkText} onPress={() => navigation.navigate('Login')}>
+              Se connecter
             </Text>
           </Text>
         </View>
@@ -134,4 +173,4 @@ const LoginScreen = ({ navigation }: any) => {
   );
 };
 
-export default LoginScreen; 
+export default SignupScreen; 

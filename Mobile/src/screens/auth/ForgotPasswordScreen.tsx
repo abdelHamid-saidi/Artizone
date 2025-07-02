@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
-import sharedStyles from '../styles/shared';
+import sharedStyles from '../../styles/shared';
 
 const ForgotPasswordScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
@@ -25,7 +25,7 @@ const ForgotPasswordScreen = ({ navigation }: any) => {
     <View style={sharedStyles.authContainer}>
       {/* Vague décorative en fond */}
       <Image
-        source={require('../../assets/landing/frame.png')}
+        source={require('../../../assets/landing/frame.png')}
         style={sharedStyles.authWaveImage}
         resizeMode="cover"
       />

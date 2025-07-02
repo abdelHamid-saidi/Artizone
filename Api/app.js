@@ -49,14 +49,14 @@ const corsOptions = {
         'http://localhost:8081',
         'http://localhost:19006',
         'http://localhost:19000',
-        'http://10.92.4.40:3000',
-        'http://10.92.4.40:8081',
-        'http://10.92.4.40:19006',
-        'http://10.92.4.40:19000',
+        'http://192.168.1.56:3000',
+        'http://192.168.1.56:8081',
+        'http://192.168.1.56:19006',
+        'http://192.168.1.56:19000',
         'exp://localhost:19000',
         'exp://localhost:19006',
-        'exp://10.92.4.40:19000',
-        'exp://10.92.4.40:19006'
+        'exp://192.168.1.56:19000',
+        'exp://192.168.1.56:19006'
       ];
     
     if (!origin || allowedOrigins.includes(origin)) {
@@ -119,7 +119,27 @@ app.use('/api/auth', authLimiter);
 
 // Middleware de logging
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - ${req.ip}`);
+  const timestamp = new Date().toISOString();
+  const method = req.method;
+  const path = req.path;
+  const ip = req.ip;
+  const userAgent = req.get('User-Agent') || 'Inconnu';
+  
+  // Log spécial pour les routes d'authentification
+  if (path.startsWith('/api/auth')) {
+    console.log(`🔐 [AUTH] ${timestamp} - ${method} ${path} - IP: ${ip}`);
+    console.log(`🔐 [AUTH] User-Agent: ${userAgent}`);
+    if (req.body && Object.keys(req.body).length > 0) {
+      const sanitizedBody = { ...req.body };
+      if (sanitizedBody.motDePasse) {
+        sanitizedBody.motDePasse = '[MOT_DE_PASSE_MASQUÉ]';
+      }
+      console.log(`🔐 [AUTH] Body:`, sanitizedBody);
+    }
+  } else {
+    console.log(`${timestamp} - ${method} ${path} - IP: ${ip}`);
+  }
+  
   next();
 });
 
@@ -150,6 +170,17 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Route de santé API (pour compatibilité)
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development',
+    message: 'API Artizone - Service de santé'
+  });
+});
+
 // Route racine
 app.get('/', (req, res) => {
   res.json({
@@ -176,6 +207,7 @@ app.use('*', (req, res) => {
       '/api/avis',
       '/api/disponibilites',
       '/api/dashboard',
+      '/api/health',
       '/api-docs',
       '/health'
     ]
@@ -273,7 +305,7 @@ sequelize.authenticate().then(() => {
     console.log(`🚀 Serveur Artizone lancé sur ${HOST}:${PORT}`);
     console.log(`📚 Documentation disponible sur http://localhost:${PORT}/api-docs`);
     console.log(`🏥 Health check disponible sur http://localhost:${PORT}/health`);
-    console.log(`🌐 Accessible depuis le réseau local: http://10.92.4.40:${PORT}`);
+    console.log(`🌐 Accessible depuis le réseau local: http://192.168.1.56:${PORT}`);
     console.log(`🌍 Environnement: ${process.env.NODE_ENV || 'development'}`);
   });
 }).catch(err => {

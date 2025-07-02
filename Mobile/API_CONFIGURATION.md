@@ -23,7 +23,7 @@ Modifiez `src/config/api.ts` :
 const ENV = {
   development: {
     // Remplacez par votre adresse IP locale
-    API_BASE_URL: 'http://192.168.1.100:3000/api',
+    API_BASE_URL: 'http://192.168.1.56:3000/api',
   },
   // ...
 };
@@ -35,8 +35,8 @@ L'API backend doit autoriser les requêtes depuis votre IP. Modifiez `Api/app.js
 const corsOptions = {
   origin: [
     'http://localhost:3000',
-    'http://192.168.1.100:3000', // Votre IP locale
-    'http://192.168.1.100:8081', // Metro bundler
+    'http://192.168.1.56:3000', // Votre IP locale
+'http://192.168.1.56:8081', // Metro bundler
     // ...
   ],
   // ...
@@ -88,7 +88,7 @@ net::ERR_FAILED
 **Solution :**
 1. Vérifiez que l'API est démarrée
 2. Vérifiez l'adresse IP dans la configuration
-3. Testez la connectivité : `ping 192.168.1.100`
+3. Testez la connectivité : `ping 192.168.1.56`
 
 ### Erreur de timeout
 ```
@@ -122,7 +122,7 @@ Vous pouvez utiliser des variables d'environnement pour différentes configurati
 ```typescript
 const ENV = {
   development: {
-    API_BASE_URL: process.env.API_URL || 'http://192.168.1.100:3000/api',
+    API_BASE_URL: process.env.API_URL || 'http://192.168.1.56:3000/api',
   },
   // ...
 };
