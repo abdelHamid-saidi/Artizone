@@ -1,0 +1,1124 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Artizone API",
+    "version": "1.0.0",
+    "description": "API REST complète pour la plateforme Artizone (mise en relation particuliers/artisans). Toutes les routes sont sécurisées par JWT sauf /auth."
+  },
+  "servers": [
+    { "url": "http://localhost:3000/api" }
+  ],
+  "tags": [
+    { "name": "Auth", "description": "Authentification" },
+    { "name": "Artisan", "description": "Gestion des artisans" },
+    { "name": "Service", "description": "Gestion des services" },
+    { "name": "Categorie", "description": "Gestion des catégories" },
+    { "name": "Disponibilite", "description": "Gestion des disponibilités" },
+    { "name": "Commande", "description": "Gestion des commandes" },
+    { "name": "Paiement", "description": "Gestion des paiements" },
+    { "name": "Avis", "description": "Gestion des avis" },
+    { "name": "Dashboard", "description": "Statistiques administrateur" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Particulier": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "nom": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "motDePasse": { "type": "string" },
+          "telephone": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["nom", "email", "motDePasse", "telephone"]
+      },
+      "Administrateur": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "nom": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "motDePasse": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Artisan": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "nom": { "type": "string" },
+          "telephone": { "type": "string" },
+          "langue": { "type": "string" },
+          "noteMoyenne": { "type": "number", "format": "float" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["nom", "telephone", "langue"]
+      },
+      "Categorie": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "nom": { "type": "string" },
+          "description": { "type": "string" },
+          "icone": { "type": "string" },
+          "couleur": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["nom"]
+      },
+      "AdresseArtisan": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "rue": { "type": "string" },
+          "ville": { "type": "string" },
+          "codePostal": { "type": "string" },
+          "pays": { "type": "string" },
+          "latitude": { "type": "number" },
+          "longitude": { "type": "number" },
+          "artisanId": { "type": "string", "format": "uuid" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Service": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "nom": { "type": "string" },
+          "description": { "type": "string" },
+          "prixUnitaire": { "type": "number" },
+          "dureeEstimee": { "type": "string" },
+          "artisanId": { "type": "string", "format": "uuid" },
+          "categorieId": { "type": "string", "format": "uuid" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["nom", "description", "prixUnitaire", "dureeEstimee", "artisanId"]
+      },
+      "Disponibilite": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "jour": { "type": "string" },
+          "heureDebut": { "type": "string" },
+          "heureFin": { "type": "string" },
+          "isDisponible": { "type": "boolean" },
+          "artisanId": { "type": "string", "format": "uuid" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["jour", "heureDebut", "heureFin", "isDisponible", "artisanId"]
+      },
+      "AdresseParticulier": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "rue": { "type": "string" },
+          "ville": { "type": "string" },
+          "codePostal": { "type": "string" },
+          "pays": { "type": "string" },
+          "latitude": { "type": "number" },
+          "longitude": { "type": "number" },
+          "particulierId": { "type": "string", "format": "uuid" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Commande": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "dateCommande": { "type": "string", "format": "date-time" },
+          "statut": { "type": "string" },
+          "description": { "type": "string" },
+          "prixTotal": { "type": "number" },
+          "particulierId": { "type": "string", "format": "uuid" },
+          "serviceId": { "type": "string", "format": "uuid" },
+          "disponibiliteId": { "type": "string", "format": "uuid" },
+          "adresseParticulierId": { "type": "string", "format": "uuid" },
+          "artisanId": { "type": "string", "format": "uuid" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["particulierId", "serviceId", "disponibiliteId", "adresseParticulierId", "artisanId"]
+      },
+      "Paiement": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "montant": { "type": "number" },
+          "methode": { "type": "string" },
+          "date": { "type": "string", "format": "date-time" },
+          "statut": { "type": "string" },
+          "commandeId": { "type": "string", "format": "uuid" },
+          "stripePaymentId": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["montant", "methode", "commandeId"]
+      },
+      "Avis": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "note": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "commentaire": { "type": "string" },
+          "date": { "type": "string", "format": "date-time" },
+          "commandeId": { "type": "string", "format": "uuid" },
+          "particulierId": { "type": "string", "format": "uuid" },
+          "artisanId": { "type": "string", "format": "uuid" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["note", "commandeId"]
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "type": { "type": "string" },
+          "contenu": { "type": "string" },
+          "dateEnvoi": { "type": "string", "format": "date-time" },
+          "statut": { "type": "string" },
+          "particulierId": { "type": "string", "format": "uuid" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  },
+  "security": [
+    { "bearerAuth": [] }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Inscription d'un particulier",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Particulier" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Inscription réussie" },
+          "400": { "description": "Erreur de validation" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Connexion utilisateur (particulier ou admin)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "motDePasse": { "type": "string" }
+                },
+                "required": ["email", "motDePasse"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Connexion réussie" },
+          "401": { "description": "Erreur d'authentification" }
+        }
+      }
+    },
+    "/artisans": {
+      "get": {
+        "tags": ["Artisan"],
+        "summary": "Récupérer tous les artisans",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Liste des artisans",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Artisan" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Artisan"],
+        "summary": "Créer un nouvel artisan",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Artisan" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Artisan créé avec succès" },
+          "400": { "description": "Erreur de validation" }
+        }
+      }
+    },
+    "/artisans/{id}": {
+      "get": {
+        "tags": ["Artisan"],
+        "summary": "Récupérer un artisan par ID",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Artisan trouvé",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Artisan" }
+              }
+            }
+          },
+          "404": { "description": "Artisan non trouvé" }
+        }
+      },
+      "put": {
+        "tags": ["Artisan"],
+        "summary": "Mettre à jour un artisan",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Artisan" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Artisan mis à jour" },
+          "404": { "description": "Artisan non trouvé" }
+        }
+      },
+      "delete": {
+        "tags": ["Artisan"],
+        "summary": "Supprimer un artisan",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Artisan supprimé" },
+          "404": { "description": "Artisan non trouvé" }
+        }
+      }
+    },
+    "/services": {
+      "get": {
+        "tags": ["Service"],
+        "summary": "Récupérer tous les services",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 1 }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "prixMin",
+            "in": "query",
+            "schema": { "type": "number", "minimum": 0 }
+          },
+          {
+            "name": "prixMax",
+            "in": "query",
+            "schema": { "type": "number", "minimum": 0 }
+          },
+          {
+            "name": "artisanId",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "categorieId",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des services",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "services": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Service" }
+                    },
+                    "total": { "type": "integer" },
+                    "currentPage": { "type": "integer" },
+                    "totalPages": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Service"],
+        "summary": "Créer un nouveau service",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Service" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Service créé avec succès" },
+          "400": { "description": "Erreur de validation" }
+        }
+      }
+    },
+    "/services/{id}": {
+      "get": {
+        "tags": ["Service"],
+        "summary": "Récupérer un service par ID",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service trouvé",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Service" }
+              }
+            }
+          },
+          "404": { "description": "Service non trouvé" }
+        }
+      },
+      "put": {
+        "tags": ["Service"],
+        "summary": "Mettre à jour un service",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Service" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Service mis à jour" },
+          "404": { "description": "Service non trouvé" }
+        }
+      },
+      "delete": {
+        "tags": ["Service"],
+        "summary": "Supprimer un service",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Service supprimé" },
+          "404": { "description": "Service non trouvé" }
+        }
+      }
+    },
+    "/disponibilites": {
+      "get": {
+        "tags": ["Disponibilite"],
+        "summary": "Récupérer toutes les disponibilités",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Liste des disponibilités",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Disponibilite" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Disponibilite"],
+        "summary": "Créer une nouvelle disponibilité",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Disponibilite" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Disponibilité créée avec succès" },
+          "400": { "description": "Erreur de validation" }
+        }
+      }
+    },
+    "/disponibilites/{id}": {
+      "get": {
+        "tags": ["Disponibilite"],
+        "summary": "Récupérer une disponibilité par ID",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Disponibilité trouvée",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Disponibilite" }
+              }
+            }
+          },
+          "404": { "description": "Disponibilité non trouvée" }
+        }
+      },
+      "put": {
+        "tags": ["Disponibilite"],
+        "summary": "Mettre à jour une disponibilité",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Disponibilite" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Disponibilité mise à jour" },
+          "404": { "description": "Disponibilité non trouvée" }
+        }
+      },
+      "delete": {
+        "tags": ["Disponibilite"],
+        "summary": "Supprimer une disponibilité",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Disponibilité supprimée" },
+          "404": { "description": "Disponibilité non trouvée" }
+        }
+      }
+    },
+    "/commandes": {
+      "get": {
+        "tags": ["Commande"],
+        "summary": "Récupérer toutes les commandes",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Liste des commandes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Commande" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Commande"],
+        "summary": "Créer une nouvelle commande",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Commande" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Commande créée avec succès" },
+          "400": { "description": "Erreur de validation" }
+        }
+      }
+    },
+    "/commandes/{id}": {
+      "get": {
+        "tags": ["Commande"],
+        "summary": "Récupérer une commande par ID",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Commande trouvée",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Commande" }
+              }
+            }
+          },
+          "404": { "description": "Commande non trouvée" }
+        }
+      },
+      "put": {
+        "tags": ["Commande"],
+        "summary": "Mettre à jour une commande",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Commande" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Commande mise à jour" },
+          "404": { "description": "Commande non trouvée" }
+        }
+      },
+      "delete": {
+        "tags": ["Commande"],
+        "summary": "Supprimer une commande",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Commande supprimée" },
+          "404": { "description": "Commande non trouvée" }
+        }
+      }
+    },
+    "/paiements": {
+      "get": {
+        "tags": ["Paiement"],
+        "summary": "Récupérer tous les paiements",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Liste des paiements",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Paiement" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Paiement"],
+        "summary": "Créer un nouveau paiement",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Paiement" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Paiement créé avec succès" },
+          "400": { "description": "Erreur de validation" }
+        }
+      }
+    },
+    "/paiements/{id}": {
+      "get": {
+        "tags": ["Paiement"],
+        "summary": "Récupérer un paiement par ID",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paiement trouvé",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Paiement" }
+              }
+            }
+          },
+          "404": { "description": "Paiement non trouvé" }
+        }
+      },
+      "put": {
+        "tags": ["Paiement"],
+        "summary": "Mettre à jour un paiement",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Paiement" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Paiement mis à jour" },
+          "404": { "description": "Paiement non trouvé" }
+        }
+      },
+      "delete": {
+        "tags": ["Paiement"],
+        "summary": "Supprimer un paiement",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Paiement supprimé" },
+          "404": { "description": "Paiement non trouvé" }
+        }
+      }
+    },
+    "/avis": {
+      "get": {
+        "tags": ["Avis"],
+        "summary": "Récupérer tous les avis",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Liste des avis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Avis" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Avis"],
+        "summary": "Créer un nouvel avis",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Avis" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Avis créé avec succès" },
+          "400": { "description": "Erreur de validation" }
+        }
+      }
+    },
+    "/avis/{id}": {
+      "get": {
+        "tags": ["Avis"],
+        "summary": "Récupérer un avis par ID",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Avis trouvé",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Avis" }
+              }
+            }
+          },
+          "404": { "description": "Avis non trouvé" }
+        }
+      },
+      "put": {
+        "tags": ["Avis"],
+        "summary": "Mettre à jour un avis",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Avis" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Avis mis à jour" },
+          "404": { "description": "Avis non trouvé" }
+        }
+      },
+      "delete": {
+        "tags": ["Avis"],
+        "summary": "Supprimer un avis",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Avis supprimé" },
+          "404": { "description": "Avis non trouvé" }
+        }
+      }
+    },
+    "/categories": {
+      "get": {
+        "tags": ["Categorie"],
+        "summary": "Récupérer toutes les catégories",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 1 }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des catégories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "categories": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Categorie" }
+                    },
+                    "total": { "type": "integer" },
+                    "currentPage": { "type": "integer" },
+                    "totalPages": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Categorie"],
+        "summary": "Créer une nouvelle catégorie",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Categorie" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Catégorie créée avec succès" },
+          "400": { "description": "Erreur de validation" }
+        }
+      }
+    },
+    "/categories/{id}": {
+      "get": {
+        "tags": ["Categorie"],
+        "summary": "Récupérer une catégorie par ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Catégorie trouvée",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Categorie" }
+              }
+            }
+          },
+          "404": { "description": "Catégorie non trouvée" }
+        }
+      },
+      "put": {
+        "tags": ["Categorie"],
+        "summary": "Mettre à jour une catégorie",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Categorie" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Catégorie mise à jour" },
+          "404": { "description": "Catégorie non trouvée" }
+        }
+      },
+      "delete": {
+        "tags": ["Categorie"],
+        "summary": "Supprimer une catégorie",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Catégorie supprimée" },
+          "400": { "description": "Impossible de supprimer - services associés" },
+          "404": { "description": "Catégorie non trouvée" }
+        }
+      }
+    },
+    "/categories/{categorieId}/services": {
+      "get": {
+        "tags": ["Categorie"],
+        "summary": "Récupérer les services d'une catégorie",
+        "parameters": [
+          {
+            "name": "categorieId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 1 }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Services de la catégorie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "services": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Service" }
+                    },
+                    "total": { "type": "integer" },
+                    "currentPage": { "type": "integer" },
+                    "totalPages": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dashboard/stats": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Récupérer les statistiques du dashboard",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Statistiques récupérées",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalArtisans": { "type": "integer" },
+                    "totalParticuliers": { "type": "integer" },
+                    "totalCommandes": { "type": "integer" },
+                    "totalPaiements": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+} 

@@ -1,0 +1,19 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+node_modules/
+.env
+.env.*
+
+NODE_ENV=development
+PORT=3000
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=yourpassword
+DB_NAME=artizone
+JWT_SECRET=your_jwt_secret
+JWT_EXPIRES_IN=1d
+BCRYPT_SALT=10
+STRIPE_SECRET_KEY=sk_test_xxx
+FIREBASE_SERVER_KEY=xxx
+CORS_ORIGIN=http://localhost:3000
