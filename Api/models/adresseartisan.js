@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
   }, { tableName: 'adresses_artisan' });
 
   AdresseArtisan.associate = models => {
-    AdresseArtisan.belongsTo(models.Artisan, { foreignKey: 'artisanId' });
+    AdresseArtisan.belongsTo(models.Artisan, { foreignKey: 'artisanId', as: 'artisan' });
   };
 
   return AdresseArtisan;

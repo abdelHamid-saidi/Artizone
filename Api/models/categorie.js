@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
   }, { tableName: 'categories' });
 
   Categorie.associate = models => {
-    Categorie.hasMany(models.Service, { foreignKey: 'categorieId' });
+    Categorie.hasMany(models.Service, { foreignKey: 'categorieId', as: 'services' });
   };
 
   return Categorie;

@@ -9,8 +9,8 @@ module.exports = (sequelize, DataTypes) => {
   }, { tableName: 'avis' });
 
   Avis.associate = models => {
-    Avis.belongsTo(models.Commande, { foreignKey: 'commandeId' });
-    Avis.belongsTo(models.Particulier, { foreignKey: 'particulierId' });
+    Avis.belongsTo(models.Commande, { foreignKey: 'commandeId', as: 'commande' });
+    Avis.belongsTo(models.Particulier, { foreignKey: 'particulierId', as: 'particulier' });
   };
 
   return Avis;

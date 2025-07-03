@@ -10,9 +10,9 @@ module.exports = (sequelize, DataTypes) => {
   }, { tableName: 'services' });
 
   Service.associate = models => {
-    Service.belongsTo(models.Artisan, { foreignKey: 'artisanId' });
-    Service.belongsTo(models.Categorie, { foreignKey: 'categorieId' });
-    Service.hasMany(models.Commande, { foreignKey: 'serviceId' });
+    Service.belongsTo(models.Artisan, { foreignKey: 'artisanId', as: 'artisan' });
+    Service.belongsTo(models.Categorie, { foreignKey: 'categorieId', as: 'categorie' });
+    Service.hasMany(models.Commande, { foreignKey: 'serviceId', as: 'commandes' });
   };
 
   return Service;

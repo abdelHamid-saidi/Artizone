@@ -1,11 +1,11 @@
-const { Artisan, Service, Disponibilite, AdresseArtisan, Avis } = require('../models');
+const { Artisan, Service, Disponibilite, AdresseArtisan } = require('../models');
 const { Op } = require('sequelize');
 const { validationResult } = require('express-validator');
 
 // Obtenir tous les artisans avec pagination et filtres
 exports.getAllArtisans = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search, noteMin, langue, ville } = req.query;
+    const { page = 1, limit = 10, search, categorieId, noteMin, langue, ville } = req.query;
     const offset = (page - 1) * limit;
     
     const whereClause = {};
@@ -22,24 +22,42 @@ exports.getAllArtisans = async (req, res) => {
       whereClause.ville = { [Op.like]: `%${ville}%` };
     }
 
+    const includeOptions = [
+      { model: AdresseArtisan, as: 'AdresseArtisans' },
+      { model: Disponibilite, as: 'disponibilites' }
+    ];
+
+    // Ajouter les services avec ou sans filtre par catégorie
+    if (categorieId) {
+      includeOptions.push({
+        model: Service,
+        as: 'services',
+        where: { categorieId: categorieId }
+      });
+    } else {
+      includeOptions.push({
+        model: Service,
+        as: 'services'
+      });
+    }
+
     const artisans = await Artisan.findAndCountAll({
       where: whereClause,
-      include: [
-        { model: AdresseArtisan, as: 'AdresseArtisans' },
-        { model: Service, as: 'services' },
-        { model: Disponibilite, as: 'disponibilites' },
-        { model: Avis, as: 'avis' }
-      ],
+      include: includeOptions,
       limit: parseInt(limit),
       offset: parseInt(offset),
       order: [['noteMoyenne', 'DESC']]
     });
 
     res.json({
-      artisans: artisans.rows,
-      total: artisans.count,
-      currentPage: parseInt(page),
-      totalPages: Math.ceil(artisans.count / limit)
+      success: true,
+      data: artisans.rows,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: artisans.count,
+        totalPages: Math.ceil(artisans.count / limit)
+      }
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -53,8 +71,7 @@ exports.getArtisanById = async (req, res) => {
       include: [
         { model: AdresseArtisan, as: 'AdresseArtisans' },
         { model: Service, as: 'services' },
-        { model: Disponibilite, as: 'disponibilites' },
-        { model: Avis, as: 'avis' }
+        { model: Disponibilite, as: 'disponibilites' }
       ]
     });
     
@@ -62,7 +79,10 @@ exports.getArtisanById = async (req, res) => {
       return res.status(404).json({ error: 'Artisan non trouvé' });
     }
     
-    res.json(artisan);
+    res.json({
+      success: true,
+      data: artisan
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -75,7 +95,10 @@ exports.createArtisan = async (req, res) => {
 
   try {
     const artisan = await Artisan.create(req.body);
-    res.status(201).json(artisan);
+    res.status(201).json({
+      success: true,
+      data: artisan
+    });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -93,7 +116,10 @@ exports.updateArtisan = async (req, res) => {
     }
     
     await artisan.update(req.body);
-    res.json(artisan);
+    res.json({
+      success: true,
+      data: artisan
+    });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -108,7 +134,10 @@ exports.deleteArtisan = async (req, res) => {
     }
     
     await artisan.destroy();
-    res.json({ message: 'Artisan supprimé avec succès' });
+    res.json({ 
+      success: true,
+      message: 'Artisan supprimé avec succès' 
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -130,7 +159,10 @@ exports.getArtisansByService = async (req, res) => {
       ]
     });
     
-    res.json(artisans);
+    res.json({
+      success: true,
+      data: artisans
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -155,7 +187,10 @@ exports.getAvailableArtisans = async (req, res) => {
       ]
     });
     
-    res.json(artisans);
+    res.json({
+      success: true,
+      data: artisans
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

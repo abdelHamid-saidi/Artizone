@@ -50,14 +50,14 @@ const corsOptions = {
         'http://localhost:8081',
         'http://localhost:19006',
         'http://localhost:19000',
-        'http://192.168.1.56:3000',
-        'http://192.168.1.56:8081',
-        'http://192.168.1.56:19006',
-        'http://192.168.1.56:19000',
+        'http://172.20.10.2:3000',
+        'http://172.20.10.2:8081',
+        'http://172.20.10.2:19006',
+        'http://172.20.10.2:19000',
         'exp://localhost:19000',
         'exp://localhost:19006',
-        'exp://192.168.1.56:19000',
-        'exp://192.168.1.56:19006'
+        'exp://172.20.10.2:19000',
+        'exp://172.20.10.2:19006'
       ];
     
     if (!origin || allowedOrigins.includes(origin)) {
@@ -307,7 +307,7 @@ sequelize.authenticate().then(() => {
     console.log(`🚀 Serveur Artizone lancé sur ${HOST}:${PORT}`);
     console.log(`📚 Documentation disponible sur http://localhost:${PORT}/api-docs`);
     console.log(`🏥 Health check disponible sur http://localhost:${PORT}/health`);
-    console.log(`🌐 Accessible depuis le réseau local: http://192.168.1.56:${PORT}`);
+    console.log(`🌐 Accessible depuis le réseau local: http://10.92.4.40:${PORT}`);
     console.log(`🌍 Environnement: ${process.env.NODE_ENV || 'development'}`);
   });
 }).catch(err => {

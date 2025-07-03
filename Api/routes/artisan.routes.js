@@ -18,6 +18,8 @@ const artisanValidation = [
 const filterValidation = [
   query('page').optional().isInt({ min: 1 }).withMessage('Page invalide'),
   query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limite invalide'),
+  query('search').optional().isString().withMessage('Recherche invalide'),
+  query('categorieId').optional().isUUID().withMessage('ID de catégorie invalide'),
   query('noteMin').optional().isFloat({ min: 0, max: 5 }).withMessage('Note minimale invalide'),
   query('langue').optional().isIn(['fr', 'en', 'es']).withMessage('Langue invalide'),
   query('ville').optional().isString().withMessage('Ville invalide')

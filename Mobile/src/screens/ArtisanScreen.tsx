@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,8 +10,11 @@ import {
   ActivityIndicator,
   TextInput,
   FlatList,
+  Animated,
+  Dimensions,
+  StatusBar,
 } from 'react-native';
-import { AntDesign, Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { AntDesign, Feather, MaterialIcons, Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import colors from '../styles/colors';
 import CustomHeader from '../components/CustomHeader';
 import {
@@ -22,6 +25,8 @@ import {
   handleApiError,
 } from '../services/api';
 import { storageService } from '../services/storage';
+
+const { width } = Dimensions.get('window');
 
 const ArtisanScreen = ({ navigation }: any) => {
   const [artisans, setArtisans] = useState<Artisan[]>([]);
@@ -40,10 +45,52 @@ const ArtisanScreen = ({ navigation }: any) => {
     telephone: '',
   });
 
+  // Animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const searchAnim = useRef(new Animated.Value(0)).current;
+  const cardAnimations = useRef<{ [key: string]: Animated.Value }>({}).current;
+
   // Récupérer les informations de l'utilisateur connecté
   useEffect(() => {
     loadUserInfo();
+    startAnimations();
   }, []);
+
+  const startAnimations = () => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const animateSearch = () => {
+    Animated.spring(searchAnim, {
+      toValue: searchText.length > 0 ? 1 : 0,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const animateCard = (artisanId: string, delay: number = 0) => {
+    if (!cardAnimations[artisanId]) {
+      cardAnimations[artisanId] = new Animated.Value(0);
+    }
+
+    Animated.timing(cardAnimations[artisanId], {
+      toValue: 1,
+      duration: 600,
+      delay,
+      useNativeDriver: true,
+    }).start();
+  };
 
   const loadUserInfo = async () => {
     try {
@@ -89,8 +136,15 @@ const ArtisanScreen = ({ navigation }: any) => {
   // Charger les artisans
   const loadArtisans = async (page: number = 1, append: boolean = false) => {
     try {
-      console.log('👨‍🔧 Chargement des artisans...');
-      setLoading(true);
+      console.log('👨‍🔧 Chargement des artisans...', {
+        page,
+        searchText,
+        selectedCategory
+      });
+      
+      if (!append) {
+        setLoading(true);
+      }
       
       const response = await artisanService.getArtisans(
         page,
@@ -105,6 +159,10 @@ const ArtisanScreen = ({ navigation }: any) => {
         setArtisans(prev => [...prev, ...newArtisans]);
       } else {
         setArtisans(newArtisans);
+        // Animer les nouvelles cartes
+        newArtisans.forEach((artisan, index) => {
+          animateCard(artisan.id, index * 100);
+        });
       }
       
       setCurrentPage(response.pagination.page);
@@ -116,12 +174,18 @@ const ArtisanScreen = ({ navigation }: any) => {
         total: response.pagination.total,
         page: response.pagination.page,
         totalPages: response.pagination.totalPages,
+        category: selectedCategory
       });
+      
+      return response;
     } catch (error) {
       console.error('❌ Erreur lors du chargement des artisans:', error);
       Alert.alert('Erreur', handleApiError(error), [{ text: 'OK' }]);
+      throw error;
     } finally {
-      setLoading(false);
+      if (!append) {
+        setLoading(false);
+      }
     }
   };
 
@@ -132,10 +196,51 @@ const ArtisanScreen = ({ navigation }: any) => {
   };
 
   // Filtrer par catégorie
-  const handleCategoryFilter = (categoryId: string | null) => {
-    setSelectedCategory(categoryId);
+  const handleCategoryFilter = async (categoryId: string | null) => {
+    console.log('🎯 Filtre catégorie:', {
+      categoryId,
+      selectedCategory,
+      isSame: selectedCategory === categoryId
+    });
+    
+    // Si on clique sur la même catégorie déjà sélectionnée, on la désélectionne
+    // Sinon on sélectionne la nouvelle catégorie
+    const newCategoryId = selectedCategory === categoryId ? null : categoryId;
+    
+    console.log('✅ Nouvelle catégorie sélectionnée:', newCategoryId);
+    
+    setSelectedCategory(newCategoryId);
     setCurrentPage(1);
-    loadArtisans(1, false);
+    setRefreshing(true);
+    
+    try {
+      // Appeler directement l'API avec la nouvelle catégorie
+      const response = await artisanService.getArtisans(
+        1,
+        10,
+        searchText || undefined,
+        newCategoryId || undefined
+      );
+      
+      const newArtisans = response.data || [];
+      setArtisans(newArtisans);
+      
+      // Animer les nouvelles cartes
+      newArtisans.forEach((artisan, index) => {
+        animateCard(artisan.id, index * 100);
+      });
+      
+      setCurrentPage(response.pagination.page);
+      setTotalPages(response.pagination.totalPages);
+      setTotalArtisans(response.pagination.total);
+      
+      console.log('✅ Liste rafraîchie après filtrage avec catégorie:', newCategoryId);
+    } catch (error) {
+      console.error('❌ Erreur lors du rafraîchissement:', error);
+      Alert.alert('Erreur', handleApiError(error), [{ text: 'OK' }]);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   // Charger plus d'artisans (pagination)
@@ -154,106 +259,171 @@ const ArtisanScreen = ({ navigation }: any) => {
   };
 
   // Rendu d'un artisan
-  const renderArtisan = ({ item }: { item: Artisan }) => (
-    <TouchableOpacity
-      style={styles.artisanCard}
-      onPress={() => {
-        // Navigation vers le détail de l'artisan
-        console.log('👨‍🔧 Navigation vers artisan:', item.id);
-        // navigation.navigate('ArtisanDetail', { artisanId: item.id });
-      }}
-      activeOpacity={0.7}
-    >
-      <View style={styles.artisanHeader}>
-        <View style={styles.artisanInfo}>
-          <Text style={styles.artisanName}>{item.nom}</Text>
-          <View style={styles.ratingContainer}>
-            <AntDesign name="star" size={16} color={colors.warning} />
-            <Text style={styles.ratingText}>
-              {item.note ? item.note.toFixed(1) : 'N/A'}
-            </Text>
-            {item.nombreAvis && (
-              <Text style={styles.reviewCount}>({item.nombreAvis} avis)</Text>
-            )}
-          </View>
-        </View>
-        <TouchableOpacity style={styles.favoriteButton}>
-          <AntDesign name="hearto" size={20} color={colors.textSecondary} />
-        </TouchableOpacity>
-      </View>
-
-      {item.description && (
-        <Text style={styles.artisanDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-      )}
-
-      <View style={styles.artisanDetails}>
-        <View style={styles.detailItem}>
-          <MaterialIcons name="location-on" size={16} color={colors.textSecondary} />
-          <Text style={styles.detailText}>
-            {item.ville ? `${item.ville}${item.codePostal ? `, ${item.codePostal}` : ''}` : 'Adresse non disponible'}
-          </Text>
-        </View>
-        
-        <View style={styles.detailItem}>
-          <MaterialIcons name="phone" size={16} color={colors.textSecondary} />
-          <Text style={styles.detailText}>{item.telephone}</Text>
-        </View>
-      </View>
-
-      {item.categories && item.categories.length > 0 && (
-        <View style={styles.categoriesContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {item.categories.map((category) => (
-              <View key={category.id} style={styles.categoryBadge}>
-                <Text style={styles.categoryText}>{category.nom}</Text>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
-      )}
-
-      {item.services && item.services.length > 0 && (
-        <View style={styles.servicesContainer}>
-          <Text style={styles.servicesTitle}>Services disponibles:</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {item.services.slice(0, 3).map((service) => (
-              <View key={service.id} style={styles.serviceBadge}>
-                <Text style={styles.serviceName}>{service.nom}</Text>
-                <Text style={styles.servicePrice}>{service.prix}€</Text>
-              </View>
-            ))}
-            {item.services.length > 3 && (
-              <View style={styles.moreServicesBadge}>
-                <Text style={styles.moreServicesText}>+{item.services.length - 3}</Text>
-              </View>
-            )}
-          </ScrollView>
-        </View>
-      )}
-    </TouchableOpacity>
-  );
-
-  // Rendu d'une catégorie
-  const renderCategory = ({ item }: { item: Categorie }) => (
-    <TouchableOpacity
-      style={[
-        styles.categoryFilter,
-        selectedCategory === item.id && styles.categoryFilterActive,
-      ]}
-      onPress={() => handleCategoryFilter(selectedCategory === item.id ? null : item.id)}
-    >
-      <Text
+  const renderArtisan = ({ item, index }: { item: Artisan; index: number }) => {
+    const cardAnimation = cardAnimations[item.id] || new Animated.Value(0);
+    
+    return (
+      <Animated.View
         style={[
-          styles.categoryFilterText,
-          selectedCategory === item.id && styles.categoryFilterTextActive,
+          styles.artisanCard,
+          {
+            opacity: cardAnimation,
+            transform: [
+              {
+                translateY: cardAnimation.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [50, 0],
+                }),
+              },
+            ],
+          },
         ]}
       >
-        {item.nom}
-      </Text>
-    </TouchableOpacity>
-  );
+        <TouchableOpacity
+          onPress={() => {
+            console.log('👨‍🔧 Navigation vers artisan:', item.id);
+            // navigation.navigate('ArtisanDetail', { artisanId: item.id });
+          }}
+          activeOpacity={0.8}
+          style={styles.artisanTouchable}
+        >
+          {/* En-tête avec photo de profil et informations principales */}
+          <View style={styles.artisanHeader}>
+            <View style={styles.artisanAvatar}>
+              <FontAwesome5 name="user-tie" size={24} color={colors.primary} />
+            </View>
+            
+            <View style={styles.artisanInfo}>
+              <Text style={styles.artisanName}>{item.nom}</Text>
+              <View style={styles.ratingContainer}>
+                <View style={styles.starsContainer}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <AntDesign
+                      key={star}
+                      name={item.note && star <= item.note ? "star" : "staro"}
+                      size={14}
+                      color={item.note && star <= item.note ? colors.warning : colors.borderLight}
+                    />
+                  ))}
+                </View>
+                <Text style={styles.ratingText}>
+                  {item.note ? item.note.toFixed(1) : 'N/A'}
+                </Text>
+                {item.nombreAvis && (
+                  <Text style={styles.reviewCount}>({item.nombreAvis})</Text>
+                )}
+              </View>
+            </View>
+            
+            <TouchableOpacity style={styles.favoriteButton} activeOpacity={0.7}>
+              <AntDesign name="hearto" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Description */}
+          {item.description && (
+            <Text style={styles.artisanDescription} numberOfLines={2}>
+              {item.description}
+            </Text>
+          )}
+
+          {/* Informations de contact */}
+          <View style={styles.artisanDetails}>
+            <View style={styles.detailItem}>
+              <View style={styles.detailIcon}>
+                <MaterialIcons name="location-on" size={16} color={colors.primary} />
+              </View>
+              <Text style={styles.detailText}>
+                {item.ville ? `${item.ville}${item.codePostal ? `, ${item.codePostal}` : ''}` : 'Adresse non disponible'}
+              </Text>
+            </View>
+            
+            <View style={styles.detailItem}>
+              <View style={styles.detailIcon}>
+                <MaterialIcons name="phone" size={16} color={colors.primary} />
+              </View>
+              <Text style={styles.detailText}>{item.telephone}</Text>
+            </View>
+          </View>
+
+          {/* Catégories */}
+          {item.categories && item.categories.length > 0 && (
+            <View style={styles.categoriesContainer}>
+              <Text style={styles.sectionTitle}>Spécialités</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {item.categories.map((category) => (
+                  <View key={category.id} style={styles.categoryBadge}>
+                    <Text style={styles.categoryText}>{category.nom}</Text>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Services */}
+          {item.services && item.services.length > 0 && (
+            <View style={styles.servicesContainer}>
+              <Text style={styles.sectionTitle}>Services disponibles</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {item.services.slice(0, 3).map((service) => (
+                  <View key={service.id} style={styles.serviceBadge}>
+                    <Text style={styles.serviceName}>{service.nom}</Text>
+                    <Text style={styles.servicePrice}>{service.prix}€</Text>
+                  </View>
+                ))}
+                {item.services.length > 3 && (
+                  <View style={styles.moreServicesBadge}>
+                    <Text style={styles.moreServicesText}>+{item.services.length - 3}</Text>
+                  </View>
+                )}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Bouton d'action */}
+          <TouchableOpacity 
+            style={styles.contactButton} 
+            activeOpacity={0.8}
+            onPress={() => {
+              console.log('📅 Navigation vers réservation artisan:', item.id);
+              navigation.navigate('ContactArtisan', { artisan: item });
+            }}
+          >
+            <Text style={styles.contactButtonText}>Réserver</Text>
+            <Feather name="calendar" size={16} color={colors.textInverse} />
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
+
+  // Rendu d'une catégorie
+  const renderCategory = ({ item }: { item: Categorie }) => {
+    const isSelected = selectedCategory === item.id;
+    
+    return (
+      <TouchableOpacity
+        style={[
+          styles.categoryFilter,
+          isSelected && styles.categoryFilterActive,
+        ]}
+        onPress={async () => {
+          console.log('🖱️ Clic sur catégorie:', item.nom, 'ID:', item.id);
+          await handleCategoryFilter(item.id);
+        }}
+        activeOpacity={0.7}
+      >
+        <Text
+          style={[
+            styles.categoryFilterText,
+            isSelected && styles.categoryFilterTextActive,
+          ]}
+        >
+          {item.nom} {isSelected ? '✓' : ''}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   // Rendu du footer de pagination
   const renderFooter = () => {
@@ -265,11 +435,15 @@ const ArtisanScreen = ({ navigation }: any) => {
           style={styles.loadMoreButton}
           onPress={loadMoreArtisans}
           disabled={loading}
+          activeOpacity={0.8}
         >
           {loading ? (
             <ActivityIndicator size="small" color={colors.primary} />
           ) : (
-            <Text style={styles.loadMoreText}>Charger plus d'artisans</Text>
+            <>
+              <Text style={styles.loadMoreText}>Charger plus d'artisans</Text>
+              <Feather name="chevron-down" size={16} color={colors.primary} />
+            </>
           )}
         </TouchableOpacity>
       </View>
@@ -278,6 +452,8 @@ const ArtisanScreen = ({ navigation }: any) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      
       <CustomHeader
         title="Artisans"
         showBack={false}
@@ -286,8 +462,22 @@ const ArtisanScreen = ({ navigation }: any) => {
         onNotificationPress={() => navigation.navigate('Notifications')}
       />
 
-      {/* Barre de recherche */}
-      <View style={styles.searchContainer}>
+      {/* Barre de recherche améliorée */}
+      <Animated.View 
+        style={[
+          styles.searchContainer,
+          {
+            transform: [
+              {
+                scale: searchAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [1, 1.02],
+                }),
+              },
+            ],
+          },
+        ]}
+      >
         <View style={styles.searchInputContainer}>
           <AntDesign name="search1" size={20} color={colors.textSecondary} />
           <TextInput
@@ -295,7 +485,10 @@ const ArtisanScreen = ({ navigation }: any) => {
             placeholder="Rechercher un artisan..."
             placeholderTextColor={colors.textSecondary}
             value={searchText}
-            onChangeText={setSearchText}
+            onChangeText={(text) => {
+              setSearchText(text);
+              animateSearch();
+            }}
             onSubmitEditing={handleSearch}
             returnKeyType="search"
           />
@@ -303,19 +496,29 @@ const ArtisanScreen = ({ navigation }: any) => {
             <TouchableOpacity
               onPress={() => {
                 setSearchText('');
+                animateSearch();
                 handleSearch();
               }}
+              activeOpacity={0.7}
             >
               <AntDesign name="close" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
           )}
         </View>
-      </View>
+      </Animated.View>
 
       {/* Filtres par catégorie */}
       {categories.length > 0 && (
-        <View style={styles.filtersContainer}>
-          <Text style={styles.filtersTitle}>Filtrer par catégorie:</Text>
+        <Animated.View 
+          style={[
+            styles.filtersContainer,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          <Text style={styles.filtersTitle}>Filtrer par spécialité</Text>
           <FlatList
             data={categories}
             renderItem={renderCategory}
@@ -324,16 +527,27 @@ const ArtisanScreen = ({ navigation }: any) => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.filtersList}
           />
-        </View>
+        </Animated.View>
       )}
 
       {/* Statistiques */}
-      <View style={styles.statsContainer}>
-        <Text style={styles.statsText}>
-          {totalArtisans} artisan{totalArtisans > 1 ? 's' : ''} trouvé{totalArtisans > 1 ? 's' : ''}
-          {selectedCategory && ` dans ${categories.find(c => c.id === selectedCategory)?.nom}`}
-        </Text>
-      </View>
+      <Animated.View 
+        style={[
+          styles.statsContainer,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          },
+        ]}
+      >
+        <View style={styles.statsContent}>
+          <MaterialIcons name="people" size={20} color={colors.primary} />
+          <Text style={styles.statsText}>
+            {totalArtisans} artisan{totalArtisans > 1 ? 's' : ''} trouvé{totalArtisans > 1 ? 's' : ''}
+            {selectedCategory && ` dans ${categories.find(c => c.id === selectedCategory)?.nom}`}
+          </Text>
+        </View>
+      </Animated.View>
 
       {/* Liste des artisans */}
       {loading && artisans.length === 0 ? (
@@ -343,13 +557,23 @@ const ArtisanScreen = ({ navigation }: any) => {
         </View>
       ) : artisans.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <MaterialIcons name="people-outline" size={64} color={colors.textSecondary} />
+          <MaterialIcons name="people-outline" size={80} color={colors.textSecondary} />
           <Text style={styles.emptyTitle}>Aucun artisan trouvé</Text>
           <Text style={styles.emptyText}>
             {searchText || selectedCategory
               ? 'Essayez de modifier vos critères de recherche'
               : 'Aucun artisan disponible pour le moment'}
           </Text>
+          <TouchableOpacity 
+            style={styles.emptyButton}
+            onPress={() => {
+              setSearchText('');
+              setSelectedCategory(null);
+              loadArtisans(1, false);
+            }}
+          >
+            <Text style={styles.emptyButtonText}>Réinitialiser les filtres</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlatList
@@ -443,9 +667,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: colors.background,
   },
+  statsContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   statsText: {
     fontSize: 14,
     color: colors.textSecondary,
+    marginLeft: 8,
   },
   loadingContainer: {
     flex: 1,
@@ -476,29 +705,52 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
   },
+  emptyButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  emptyButtonText: {
+    color: colors.textInverse,
+    fontSize: 14,
+    fontWeight: '600',
+  },
   artisansList: {
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
   artisanCard: {
     backgroundColor: colors.background,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
     marginBottom: 16,
     shadowColor: colors.shadow,
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  artisanTouchable: {
+    padding: 16,
   },
   artisanHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 12,
+  },
+  artisanAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primary + '20',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
   artisanInfo: {
     flex: 1,
@@ -507,11 +759,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  starsContainer: {
+    flexDirection: 'row',
+    marginRight: 8,
   },
   ratingText: {
     fontSize: 14,
@@ -525,7 +781,9 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   favoriteButton: {
-    padding: 4,
+    padding: 8,
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: 20,
   },
   artisanDescription: {
     fontSize: 14,
@@ -534,20 +792,35 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   artisanDetails: {
-    marginBottom: 12,
+    marginBottom: 16,
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 8,
+  },
+  detailIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.primary + '15',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
   },
   detailText: {
     fontSize: 14,
     color: colors.textSecondary,
-    marginLeft: 8,
+    flex: 1,
   },
   categoriesContainer: {
-    marginBottom: 12,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 8,
   },
   categoryBadge: {
     backgroundColor: colors.primary + '20',
@@ -563,12 +836,7 @@ const styles = StyleSheet.create({
   },
   servicesContainer: {
     marginTop: 8,
-  },
-  servicesTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 8,
+    marginBottom: 16,
   },
   serviceBadge: {
     backgroundColor: colors.success + '20',
@@ -617,6 +885,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.primary,
     fontWeight: '500',
+  },
+  contactButton: {
+    backgroundColor: colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  contactButtonText: {
+    color: colors.textInverse,
+    fontSize: 14,
+    fontWeight: '600',
+    marginRight: 8,
   },
 });
 

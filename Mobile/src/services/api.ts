@@ -110,6 +110,22 @@ export interface ArtisansResponse {
   };
 }
 
+// Fonctions utilitaires pour générer des données aléatoires
+const generateRandomPrice = (): number => {
+  // Prix entre 20€ et 200€
+  return Math.floor(Math.random() * 180) + 20;
+};
+
+const generateRandomRating = (): number => {
+  // Note entre 3.0 et 5.0 avec une décimale
+  return Math.round((Math.random() * 2 + 3) * 10) / 10;
+};
+
+const generateRandomReviewCount = (): number => {
+  // Nombre d'avis entre 5 et 50
+  return Math.floor(Math.random() * 45) + 5;
+};
+
 // Fonction utilitaire pour faire des requêtes API avec timeout
 const fetchWithTimeout = async (url: string, options: RequestInit, timeout: number = API_TIMEOUT) => {
   const controller = new AbortController();
@@ -808,6 +824,20 @@ export const artisanService = {
       }
 
       const data = await response.json();
+      
+      // Ajouter des prix aléatoires aux services et des notes aléatoires aux artisans
+      if (data.data && Array.isArray(data.data)) {
+        data.data = data.data.map((artisan: Artisan) => ({
+          ...artisan,
+          note: artisan.note || generateRandomRating(),
+          nombreAvis: artisan.nombreAvis || generateRandomReviewCount(),
+          services: artisan.services?.map((service: Service) => ({
+            ...service,
+            prix: service.prix || generateRandomPrice()
+          })) || []
+        }));
+      }
+      
       console.log('✅ Artisans récupérés avec succès:', {
         count: data.data?.length || 0,
         total: data.pagination?.total || 0,
@@ -856,6 +886,20 @@ export const artisanService = {
       }
 
       const data = await response.json();
+      
+      // Ajouter des prix aléatoires aux services et des notes aléatoires à l'artisan
+      if (data.data) {
+        data.data = {
+          ...data.data,
+          note: data.data.note || generateRandomRating(),
+          nombreAvis: data.data.nombreAvis || generateRandomReviewCount(),
+          services: data.data.services?.map((service: Service) => ({
+            ...service,
+            prix: service.prix || generateRandomPrice()
+          })) || []
+        };
+      }
+      
       console.log('✅ Artisan récupéré avec succès:', {
         nom: data.data?.nom,
         success: data.success

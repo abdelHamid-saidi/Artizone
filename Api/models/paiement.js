@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
   }, { tableName: 'paiements' });
 
   Paiement.associate = models => {
-    Paiement.belongsTo(models.Commande, { foreignKey: 'commandeId' });
+    Paiement.belongsTo(models.Commande, { foreignKey: 'commandeId', as: 'commande' });
   };
 
   return Paiement;

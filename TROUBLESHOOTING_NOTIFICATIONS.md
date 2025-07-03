@@ -31,7 +31,7 @@ Ce script va :
 
 Assurez-vous que l'URL correspond à votre configuration :
 ```typescript
-API_BASE_URL: 'http://192.168.1.56:3000/api', // Remplacez par votre IP
+API_BASE_URL: 'http://10.92.4.40:3000/api', // Remplacez par votre IP
 ```
 
 **Pour trouver votre IP :**
@@ -42,7 +42,7 @@ API_BASE_URL: 'http://192.168.1.56:3000/api', // Remplacez par votre IP
 
 Avec Postman ou curl :
 ```bash
-curl -X GET "http://192.168.1.56:3000/api/notifications/particulier/VOTRE_USER_ID" \
+curl -X GET "http://10.92.4.40:3000/api/notifications/particulier/VOTRE_USER_ID" \
   -H "Authorization: Bearer VOTRE_TOKEN" \
   -H "Content-Type: application/json"
 ```
@@ -73,7 +73,7 @@ Dans l'app mobile, vérifiez que :
 **Solution :**
 - Vérifier que l'app mobile et l'API sont sur le même réseau
 - Vérifier l'adresse IP dans la configuration
-- Tester la connectivité : `ping 192.168.1.56`
+- Tester la connectivité : `ping 10.92.4.40`
 
 #### Problème 4 : "Aucune notification" affichée
 **Cause :** Pas de notifications dans la base de données
@@ -96,10 +96,10 @@ Dans l'app mobile, ouvrez les DevTools et vérifiez :
 #### 3. Test de connectivité
 ```bash
 # Tester si l'API répond
-curl http://192.168.1.56:3000/health
+curl http://10.92.4.40:3000/health
 
 # Tester l'endpoint de santé
-curl http://192.168.1.56:3000/api/health
+curl http://10.92.4.40:3000/api/health
 ```
 
 ### 📋 Checklist de vérification

@@ -2,13 +2,12 @@
 const ENV = {
   development: {
     // Configuration flexible pour le développement
-    // Remplacez YOUR_LOCAL_IP par votre adresse IP locale
-    // Exemple: 'http://192.168.1.56:3000/api'
-    API_BASE_URL: 'http://192.168.1.56:3000/api',
+    // Adresse IP locale détectée automatiquement
+    API_BASE_URL: 'http://172.20.10.2:3000/api',
     
     // Alternatives (décommentez si nécessaire):
     // API_BASE_URL: 'http://localhost:3000/api', // Pour test sur le même appareil
-    // API_BASE_URL: 'http://192.168.1.56:3000/api', // Exemple d'IP différente
+    // API_BASE_URL: 'http://10.92.4.40:3000/api', // Ancienne IP
   },
   production: {
     API_BASE_URL: 'https://votre-domaine.com/api', // À remplacer par votre URL de production

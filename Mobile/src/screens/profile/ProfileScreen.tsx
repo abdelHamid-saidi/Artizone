@@ -13,6 +13,7 @@ import {
 import { AntDesign, Feather } from '@expo/vector-icons';
 import colors from '../../styles/colors';
 import { storageService } from '../../services/storage';
+import { profileService, handleApiError } from '../../services/api';
 import CustomHeader from '../../components/CustomHeader';
 
 // Composant Input personnalisé
@@ -81,21 +82,33 @@ const ProfileScreen = ({ navigation }: any) => {
 
   const loadUserInfo = async () => {
     try {
-      // Simulation de chargement des données dynamiques
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('🔄 Chargement des informations du profil...');
       
-      // Données dynamiques basées sur l'heure et la date
-      const now = new Date();
-      const hours = now.getHours();
-      const dayOfWeek = now.toLocaleDateString('fr-FR', { weekday: 'long' });
+      // Vérifier si l'utilisateur est connecté
+      const isAuth = await storageService.isAuthenticated();
+      if (!isAuth) {
+        console.log('❌ Utilisateur non connecté');
+        Alert.alert('Erreur', 'Vous devez être connecté pour accéder au profil');
+        return;
+      }
       
-      setUserInfo({
-        nom: `Jean Dupont (${dayOfWeek})`,
-        email: `jean.dupont${hours}@email.com`,
-        telephone: `+33 6 12 34 ${hours.toString().padStart(2, '0')} ${now.getMinutes().toString().padStart(2, '0')}`,
-      });
+      const token = await storageService.getAuthToken();
+      console.log('🔑 Token trouvé:', token ? 'Oui' : 'Non');
+      
+      const response = await profileService.getProfile();
+      
+      if (response.user) {
+        setUserInfo({
+          nom: response.user.nom || '',
+          email: response.user.email || '',
+          telephone: response.user.telephone || '',
+        });
+        console.log('✅ Profil chargé avec succès:', response.user);
+      }
     } catch (error) {
-      console.error('Erreur chargement profil:', error);
+      console.error('❌ Erreur chargement profil:', error);
+      const errorMessage = handleApiError(error);
+      Alert.alert('Erreur', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -114,17 +127,27 @@ const ProfileScreen = ({ navigation }: any) => {
 
     try {
       setSaving(true);
-      // Simulation de sauvegarde
-      await new Promise(resolve => setTimeout(resolve, 800));
+      console.log('🔄 Mise à jour du champ:', field, 'avec la valeur:', tempValue.trim());
       
-      setUserInfo(prev => ({
-        ...prev,
-        [field]: tempValue.trim()
-      }));
+      // Préparer les données à mettre à jour
+      const updateData: any = {};
+      updateData[field] = tempValue.trim();
       
-      Alert.alert('✅ Succès', `${getFieldLabel(field)} mis à jour avec succès`);
+      const response = await profileService.updateProfile(updateData);
+      
+      if (response.user) {
+        setUserInfo(prev => ({
+          ...prev,
+          [field]: tempValue.trim()
+        }));
+        
+        console.log('✅ Champ mis à jour avec succès:', field);
+        Alert.alert('✅ Succès', `${getFieldLabel(field)} mis à jour avec succès`);
+      }
     } catch (error) {
-      Alert.alert('❌ Erreur', `Impossible de mettre à jour ${getFieldLabel(field)}`);
+      console.error('❌ Erreur mise à jour champ:', field, error);
+      const errorMessage = handleApiError(error);
+      Alert.alert('❌ Erreur', errorMessage);
     } finally {
       setSaving(false);
       setEditingField(null);

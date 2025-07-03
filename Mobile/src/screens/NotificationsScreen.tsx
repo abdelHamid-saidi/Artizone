@@ -12,7 +12,7 @@ import {
 import { AntDesign, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import colors from '../styles/colors';
 import CustomHeader from '../components/CustomHeader';
-import { notificationService, Notification, handleApiError } from '../services/api';
+import { notificationService, profileService, Notification, handleApiError } from '../services/api';
 import { storageService } from '../services/storage';
 
 const NotificationsScreen = ({ navigation }: any) => {
@@ -26,6 +26,7 @@ const NotificationsScreen = ({ navigation }: any) => {
     telephone: '',
   });
   const [unreadCount, setUnreadCount] = useState(0);
+  const [useStandardNotifications, setUseStandardNotifications] = useState(false);
 
   // Récupérer les informations de l'utilisateur connecté
   useEffect(() => {
@@ -41,12 +42,34 @@ const NotificationsScreen = ({ navigation }: any) => {
       
       if (token && role && userId) {
         console.log('✅ Utilisateur connecté trouvé:', { userId, role });
-        setUserInfo({
-          id: userId,
-          nom: 'Utilisateur', // À remplacer par un appel API pour récupérer les vraies données
-          email: 'user@example.com',
-          telephone: '+33 6 12 34 56 78',
-        });
+        
+        // Récupérer les vraies informations utilisateur depuis l'API
+        try {
+          const profileResponse = await profileService.getProfile();
+          const userData = profileResponse.user;
+          
+          setUserInfo({
+            id: userData.id.toString(),
+            nom: userData.nom,
+            email: userData.email,
+            telephone: userData.telephone || '',
+          });
+          
+          console.log('✅ Profil utilisateur récupéré:', {
+            id: userData.id,
+            nom: userData.nom,
+            email: userData.email
+          });
+        } catch (profileError) {
+          console.warn('⚠️ Impossible de récupérer le profil, utilisation des données de base:', profileError);
+          // Fallback avec les données de base
+          setUserInfo({
+            id: userId,
+            nom: 'Utilisateur',
+            email: 'user@example.com',
+            telephone: '+33 6 12 34 56 78',
+          });
+        }
         
         // Charger les notifications une fois l'utilisateur identifié
         await fetchNotifications(userId);
@@ -58,6 +81,87 @@ const NotificationsScreen = ({ navigation }: any) => {
       console.error('❌ Erreur lors de la récupération des informations utilisateur:', error);
       setLoading(false);
     }
+  };
+
+  // Notifications standard en cas d'échec de l'API
+  const getStandardNotifications = (): Notification[] => {
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - 3600000);
+    const twoHoursAgo = new Date(now.getTime() - 7200000);
+    const oneDayAgo = new Date(now.getTime() - 86400000);
+    
+    return [
+      {
+        id: 'standard-1',
+        type: 'reservation',
+        contenu: 'Votre réservation avec l\'artisan Jean Dupont a été confirmée pour le 15/12/2024 à 14h00.',
+        dateEnvoi: now.toISOString(),
+        statut: 'non_lu',
+        particulierId: userInfo.id || 'standard-user',
+        administrateurId: undefined,
+        Particulier: {
+          id: userInfo.id || 'standard-user',
+          nom: userInfo.nom || 'Utilisateur',
+          email: userInfo.email || 'user@example.com'
+        }
+      },
+      {
+        id: 'standard-2',
+        type: 'message',
+        contenu: 'Nouveau message de l\'artisan Marie Martin concernant votre demande de devis pour la rénovation de votre salle de bain.',
+        dateEnvoi: oneHourAgo.toISOString(),
+        statut: 'non_lu',
+        particulierId: userInfo.id || 'standard-user',
+        administrateurId: undefined,
+        Particulier: {
+          id: userInfo.id || 'standard-user',
+          nom: userInfo.nom || 'Utilisateur',
+          email: userInfo.email || 'user@example.com'
+        }
+      },
+      {
+        id: 'standard-3',
+        type: 'reminder',
+        contenu: 'Rappel : Votre rendez-vous avec l\'artisan Pierre Durand est prévu demain à 10h00 pour l\'installation de votre cuisine.',
+        dateEnvoi: twoHoursAgo.toISOString(),
+        statut: 'lu',
+        particulierId: userInfo.id || 'standard-user',
+        administrateurId: undefined,
+        Particulier: {
+          id: userInfo.id || 'standard-user',
+          nom: userInfo.nom || 'Utilisateur',
+          email: userInfo.email || 'user@example.com'
+        }
+      },
+      {
+        id: 'standard-4',
+        type: 'promo',
+        contenu: '🎉 Offre spéciale ! 20% de réduction sur tous les services de plomberie ce mois-ci. Profitez-en !',
+        dateEnvoi: oneDayAgo.toISOString(),
+        statut: 'lu',
+        particulierId: userInfo.id || 'standard-user',
+        administrateurId: undefined,
+        Particulier: {
+          id: userInfo.id || 'standard-user',
+          nom: userInfo.nom || 'Utilisateur',
+          email: userInfo.email || 'user@example.com'
+        }
+      },
+      {
+        id: 'standard-5',
+        type: 'commande',
+        contenu: 'Votre commande de matériaux pour la rénovation a été expédiée. Numéro de suivi : ARTZ-2024-001.',
+        dateEnvoi: oneDayAgo.toISOString(),
+        statut: 'lu',
+        particulierId: userInfo.id || 'standard-user',
+        administrateurId: undefined,
+        Particulier: {
+          id: userInfo.id || 'standard-user',
+          nom: userInfo.nom || 'Utilisateur',
+          email: userInfo.email || 'user@example.com'
+        }
+      }
+    ];
   };
 
   // Récupérer les notifications
@@ -74,6 +178,8 @@ const NotificationsScreen = ({ navigation }: any) => {
     
     try {
       setLoading(true);
+      setUseStandardNotifications(false); // Réinitialiser le flag
+      
       const response = await notificationService.getNotifications(targetUserId);
       console.log('✅ Réponse API reçue:', response);
       
@@ -88,13 +194,56 @@ const NotificationsScreen = ({ navigation }: any) => {
         total: notificationsData.length,
         unread: unreadNotifications.length
       });
+      
+      // Afficher un message si aucune notification
+      if (notificationsData.length === 0) {
+        console.log('ℹ️ Aucune notification trouvée pour cet utilisateur');
+      }
     } catch (error) {
       console.error('❌ Erreur lors de la récupération des notifications:', error);
-      Alert.alert(
-        'Erreur',
-        handleApiError(error),
-        [{ text: 'OK' }]
-      );
+      
+      // Gestion spécifique des erreurs
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      if (errorMessage.includes('401') || errorMessage.includes('non autorisé')) {
+        Alert.alert(
+          'Session expirée',
+          'Votre session a expiré. Veuillez vous reconnecter.',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                // Rediriger vers la page de connexion
+                navigation.navigate('Login');
+              }
+            }
+          ]
+        );
+      } else {
+        // Utiliser les notifications standard en cas d'erreur
+        console.log('🔄 Utilisation des notifications standard en raison de l\'erreur API');
+        const standardNotifications = getStandardNotifications();
+        setNotifications(standardNotifications);
+        setUseStandardNotifications(true);
+        
+        const unreadStandardNotifications = standardNotifications.filter(notif => notif.statut === 'non_lu');
+        setUnreadCount(unreadStandardNotifications.length);
+        
+        console.log('📊 Notifications standard chargées:', {
+          total: standardNotifications.length,
+          unread: unreadStandardNotifications.length
+        });
+        
+        // Afficher une alerte informant l'utilisateur
+        Alert.alert(
+          'Mode hors ligne',
+          'Impossible de récupérer les notifications depuis le serveur. Affichage des notifications de démonstration.',
+          [
+            { text: 'Réessayer', onPress: () => fetchNotifications(targetUserId) },
+            { text: 'Continuer', onPress: () => {} }
+          ]
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -103,7 +252,27 @@ const NotificationsScreen = ({ navigation }: any) => {
   // Marquer une notification comme lue
   const markAsRead = async (notificationId: string) => {
     try {
+      // Si c'est une notification standard, pas besoin d'appeler l'API
+      if (notificationId.startsWith('standard-')) {
+        console.log('📝 Marquage notification standard comme lue:', notificationId);
+        // Mettre à jour l'état local
+        setNotifications(prev => 
+          prev.map(notif => 
+            notif.id === notificationId 
+              ? { ...notif, statut: 'lu' as const }
+              : notif
+          )
+        );
+        
+        // Mettre à jour le compteur de notifications non lues
+        setUnreadCount(prev => Math.max(0, prev - 1));
+        return;
+      }
+      
+      // Appel API pour les vraies notifications
       await notificationService.markAsRead(notificationId);
+      console.log('✅ Notification marquée comme lue via API:', notificationId);
+      
       // Mettre à jour l'état local
       setNotifications(prev => 
         prev.map(notif => 
@@ -117,6 +286,20 @@ const NotificationsScreen = ({ navigation }: any) => {
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Erreur lors du marquage comme lu:', error);
+      
+      // En cas d'erreur API, marquer quand même localement
+      if (!notificationId.startsWith('standard-')) {
+        console.log('🔄 Marquage local en raison de l\'erreur API');
+        setNotifications(prev => 
+          prev.map(notif => 
+            notif.id === notificationId 
+              ? { ...notif, statut: 'lu' as const }
+              : notif
+          )
+        );
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+      
       Alert.alert(
         'Erreur',
         handleApiError(error),
@@ -130,7 +313,20 @@ const NotificationsScreen = ({ navigation }: any) => {
     if (!userInfo.id) return;
     
     try {
+      // Si on utilise des notifications standard, marquer localement
+      if (useStandardNotifications) {
+        console.log('📝 Marquage de toutes les notifications standard comme lues');
+        setNotifications(prev => 
+          prev.map(notif => ({ ...notif, statut: 'lu' as const }))
+        );
+        setUnreadCount(0);
+        return;
+      }
+      
+      // Appel API pour les vraies notifications
       await notificationService.markAllAsRead(userInfo.id);
+      console.log('✅ Toutes les notifications marquées comme lues via API');
+      
       // Mettre à jour l'état local
       setNotifications(prev => 
         prev.map(notif => ({ ...notif, statut: 'lu' as const }))
@@ -140,6 +336,14 @@ const NotificationsScreen = ({ navigation }: any) => {
       setUnreadCount(0);
     } catch (error) {
       console.error('Erreur lors du marquage de toutes les notifications:', error);
+      
+      // En cas d'erreur API, marquer quand même localement
+      console.log('🔄 Marquage local de toutes les notifications en raison de l\'erreur API');
+      setNotifications(prev => 
+        prev.map(notif => ({ ...notif, statut: 'lu' as const }))
+      );
+      setUnreadCount(0);
+      
       Alert.alert(
         'Erreur',
         handleApiError(error),
@@ -151,8 +355,14 @@ const NotificationsScreen = ({ navigation }: any) => {
   // Fonction de rafraîchissement
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchNotifications();
-    setRefreshing(false);
+    try {
+      // Recharger les informations utilisateur et les notifications
+      await loadUserInfo();
+    } catch (error) {
+      console.error('❌ Erreur lors du rafraîchissement:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   // Obtenir l'icône selon le type de notification
@@ -244,6 +454,14 @@ const NotificationsScreen = ({ navigation }: any) => {
           />
         }
       >
+        {/* Indicateur de mode hors ligne */}
+        {useStandardNotifications && (
+          <View style={styles.offlineIndicator}>
+            <MaterialIcons name="wifi-off" size={16} color={colors.warning} />
+            <Text style={styles.offlineText}>Mode hors ligne - Notifications de démonstration</Text>
+          </View>
+        )}
+
         {/* Bouton pour marquer toutes comme lues */}
         {notifications.some(n => n.statut === 'non_lu') && (
           <TouchableOpacity style={styles.markAllButton} onPress={markAllAsRead}>
@@ -414,6 +632,24 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     marginLeft: 8,
     marginTop: 4,
+  },
+  offlineIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    marginHorizontal: 16,
+    marginTop: 8,
+    backgroundColor: colors.background,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.warning,
+  },
+  offlineText: {
+    marginLeft: 8,
+    fontSize: 12,
+    color: colors.warning,
+    fontWeight: '500',
   },
 });
 

@@ -15,6 +15,7 @@ import PaymentMethodsScreen from '../screens/profile/PaymentMethodsScreen';
 import PreferencesScreen from '../screens/profile/PreferencesScreen';
 import HelpSupportScreen from '../screens/profile/HelpSupportScreen';
 import AboutScreen from '../screens/profile/AboutScreen';
+import ContactArtisanScreen from '../screens/ContactArtisanScreen';
 import { Dimensions } from 'react-native';
 
 const Stack = createStackNavigator();
@@ -58,6 +59,7 @@ const AppNavigator = () => (
     <Stack.Screen name="Preferences" component={PreferencesScreen} />
     <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
     <Stack.Screen name="About" component={AboutScreen} />
+    <Stack.Screen name="ContactArtisan" component={ContactArtisanScreen} />
   </Stack.Navigator>
 );
 

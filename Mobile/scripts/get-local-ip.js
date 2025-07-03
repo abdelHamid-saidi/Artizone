@@ -53,7 +53,7 @@ function main() {
   console.log('   4. Redémarrez votre application mobile\n');
 
   console.log('🔧 Exemple de configuration :');
-      console.log('   API_BASE_URL: \'http://192.168.1.56:3000/api\'');
+      console.log('   API_BASE_URL: \'http://172.20.10.2:3000/api\'');
 }
 
 if (require.main === module) {

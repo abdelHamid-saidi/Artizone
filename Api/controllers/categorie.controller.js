@@ -24,10 +24,14 @@ exports.getAllCategories = async (req, res) => {
     });
 
     res.json({
-      categories: categories.rows,
-      total: categories.count,
-      currentPage: parseInt(page),
-      totalPages: Math.ceil(categories.count / limit)
+      success: true,
+      data: categories.rows,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: categories.count,
+        totalPages: Math.ceil(categories.count / limit)
+      }
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -47,7 +51,10 @@ exports.getCategorieById = async (req, res) => {
       return res.status(404).json({ error: 'Catégorie non trouvée' });
     }
     
-    res.json(categorie);
+    res.json({
+      success: true,
+      data: categorie
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -60,7 +67,10 @@ exports.createCategorie = async (req, res) => {
 
   try {
     const categorie = await Categorie.create(req.body);
-    res.status(201).json(categorie);
+    res.status(201).json({
+      success: true,
+      data: categorie
+    });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -78,7 +88,10 @@ exports.updateCategorie = async (req, res) => {
     }
     
     await categorie.update(req.body);
-    res.json(categorie);
+    res.json({
+      success: true,
+      data: categorie
+    });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -101,7 +114,10 @@ exports.deleteCategorie = async (req, res) => {
     }
     
     await categorie.destroy();
-    res.json({ message: 'Catégorie supprimée avec succès' });
+    res.json({ 
+      success: true,
+      message: 'Catégorie supprimée avec succès' 
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -125,10 +141,14 @@ exports.getServicesByCategorie = async (req, res) => {
     });
     
     res.json({
-      services: services.rows,
-      total: services.count,
-      currentPage: parseInt(page),
-      totalPages: Math.ceil(services.count / limit)
+      success: true,
+      data: services.rows,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: services.count,
+        totalPages: Math.ceil(services.count / limit)
+      }
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

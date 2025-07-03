@@ -13,13 +13,13 @@ module.exports = (sequelize, DataTypes) => {
   }, { tableName: 'commandes' });
 
   Commande.associate = models => {
-    Commande.belongsTo(models.Particulier, { foreignKey: 'particulierId' });
-    Commande.belongsTo(models.Service, { foreignKey: 'serviceId' });
-    Commande.belongsTo(models.Disponibilite, { foreignKey: 'disponibiliteId' });
-    Commande.belongsTo(models.AdresseParticulier, { foreignKey: 'adresseParticulierId' });
-    Commande.belongsTo(models.Artisan, { foreignKey: 'artisanId' });
-    Commande.hasOne(models.Paiement, { foreignKey: 'commandeId' });
-    Commande.hasOne(models.Avis, { foreignKey: 'commandeId' });
+    Commande.belongsTo(models.Particulier, { foreignKey: 'particulierId', as: 'particulier' });
+    Commande.belongsTo(models.Service, { foreignKey: 'serviceId', as: 'service' });
+    Commande.belongsTo(models.Disponibilite, { foreignKey: 'disponibiliteId', as: 'disponibilite' });
+    Commande.belongsTo(models.AdresseParticulier, { foreignKey: 'adresseParticulierId', as: 'adresseParticulier' });
+    Commande.belongsTo(models.Artisan, { foreignKey: 'artisanId', as: 'artisan' });
+    Commande.hasOne(models.Paiement, { foreignKey: 'commandeId', as: 'paiement' });
+    Commande.hasOne(models.Avis, { foreignKey: 'commandeId', as: 'avis' });
   };
 
   return Commande;

@@ -9,8 +9,8 @@ module.exports = (sequelize, DataTypes) => {
   }, { tableName: 'disponibilites' });
 
   Disponibilite.associate = models => {
-    Disponibilite.belongsTo(models.Artisan, { foreignKey: 'artisanId' });
-    Disponibilite.hasMany(models.Commande, { foreignKey: 'disponibiliteId' });
+    Disponibilite.belongsTo(models.Artisan, { foreignKey: 'artisanId', as: 'artisan' });
+    Disponibilite.hasMany(models.Commande, { foreignKey: 'disponibiliteId', as: 'commandes' });
   };
 
   return Disponibilite;

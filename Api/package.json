@@ -7,6 +7,8 @@
     "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "check-consistency": "node scripts/check-consistency.js",
+    "test-profile": "node scripts/test-profile-api.js",
+    "test-associations": "node scripts/test-associations.js",
     "db:migrate": "sequelize-cli db:migrate",
     "db:seed": "sequelize-cli db:seed:all"
   },
