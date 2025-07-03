@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Platform, View, Text } from 'react-native';
 import { AntDesign, Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
-import HistoriqueScreen from '../screens/HistoriqueScreen';
+import ArtisanScreen from '../screens/ArtisanScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import CompteScreen from '../screens/CompteScreen';
 import ReservationScreen from '../screens/ReservationScreen';
@@ -77,15 +77,15 @@ const TabNavigator = () => {
       />
       
       <Tab.Screen
-        name="Historique"
-        component={HistoriqueScreen}
+        name="Artisan"
+        component={ArtisanScreen}
         options={{
-          tabBarLabel: 'Historique',
+          tabBarLabel: 'Artisan',
           tabBarIcon: ({ color, size, focused }) => (
             <AnimatedTabIcon
               icon={
                 <MaterialIcons 
-                  name="history" 
+                  name="person" 
                   size={focused ? 24 : 22} 
                   color={color}
                 />

@@ -61,6 +61,55 @@ export interface NotificationUpdateResponse {
   data?: Notification;
 }
 
+// Types pour les catégories
+export interface Categorie {
+  id: string;
+  nom: string;
+  description?: string;
+  icone?: string;
+}
+
+export interface CategoriesResponse {
+  success: boolean;
+  data: Categorie[];
+}
+
+// Types pour les artisans
+export interface Artisan {
+  id: string;
+  nom: string;
+  email: string;
+  telephone: string;
+  description?: string;
+  note?: number;
+  nombreAvis?: number;
+  adresse?: string;
+  ville?: string;
+  codePostal?: string;
+  categories?: Categorie[];
+  services?: Service[];
+}
+
+export interface Service {
+  id: string;
+  nom: string;
+  description: string;
+  prix: number;
+  duree: number;
+  categorieId: string;
+}
+
+export interface ArtisansResponse {
+  success: boolean;
+  data: Artisan[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 // Fonction utilitaire pour faire des requêtes API avec timeout
 const fetchWithTimeout = async (url: string, options: RequestInit, timeout: number = API_TIMEOUT) => {
   const controller = new AbortController();
@@ -661,6 +710,164 @@ export const notificationService = {
         throw new Error('Délai d\'attente dépassé. Vérifiez votre connexion internet.');
       }
       console.error('❌ Erreur mise à jour notifications:', error);
+      throw error;
+    }
+  },
+};
+
+// Service des catégories
+export const categorieService = {
+  // Récupérer toutes les catégories
+  getCategories: async (): Promise<CategoriesResponse> => {
+    console.log('🏷️ === RÉCUPÉRATION CATÉGORIES ===');
+    
+    try {
+      const token = await getAuthToken();
+      
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.API_BASE_URL}/categories`,
+        {
+          method: 'GET',
+          headers: {
+            ...DEFAULT_HEADERS,
+            'Authorization': `Bearer ${token}`
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Erreur API:', {
+          status: response.status,
+          error: errorData
+        });
+        throw new Error(errorData.error || 'Erreur lors de la récupération des catégories');
+      }
+
+      const data = await response.json();
+      console.log('✅ Catégories récupérées avec succès:', {
+        count: data.data?.length || 0,
+        success: data.success
+      });
+      
+      return data;
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.error('⏰ Timeout de la requête de récupération catégories');
+        throw new Error('Délai d\'attente dépassé. Vérifiez votre connexion internet.');
+      }
+      console.error('❌ Erreur récupération catégories:', error);
+      throw error;
+    }
+  },
+};
+
+// Service des artisans
+export const artisanService = {
+  // Récupérer les artisans avec pagination et filtres
+  getArtisans: async (
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+    categorieId?: string
+  ): Promise<ArtisansResponse> => {
+    console.log('👨‍🔧 === RÉCUPÉRATION ARTISANS ===');
+    console.log('📄 Page:', page);
+    console.log('📊 Limite:', limit);
+    console.log('🔍 Recherche:', search || 'Aucune');
+    console.log('🏷️ Catégorie:', categorieId || 'Toutes');
+    
+    try {
+      const token = await getAuthToken();
+      
+      // Construire les paramètres de requête
+      const params = new URLSearchParams();
+      params.append('page', page.toString());
+      params.append('limit', limit.toString());
+      if (search) params.append('search', search);
+      if (categorieId) params.append('categorieId', categorieId);
+      
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.API_BASE_URL}/artisans?${params.toString()}`,
+        {
+          method: 'GET',
+          headers: {
+            ...DEFAULT_HEADERS,
+            'Authorization': `Bearer ${token}`
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Erreur API:', {
+          status: response.status,
+          error: errorData
+        });
+        throw new Error(errorData.error || 'Erreur lors de la récupération des artisans');
+      }
+
+      const data = await response.json();
+      console.log('✅ Artisans récupérés avec succès:', {
+        count: data.data?.length || 0,
+        total: data.pagination?.total || 0,
+        page: data.pagination?.page || 1,
+        totalPages: data.pagination?.totalPages || 1,
+        success: data.success
+      });
+      
+      return data;
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.error('⏰ Timeout de la requête de récupération artisans');
+        throw new Error('Délai d\'attente dépassé. Vérifiez votre connexion internet.');
+      }
+      console.error('❌ Erreur récupération artisans:', error);
+      throw error;
+    }
+  },
+
+  // Récupérer un artisan par ID
+  getArtisanById: async (artisanId: string): Promise<{ success: boolean; data: Artisan }> => {
+    console.log('👨‍🔧 === RÉCUPÉRATION ARTISAN PAR ID ===');
+    console.log('🆔 Artisan ID:', artisanId);
+    
+    try {
+      const token = await getAuthToken();
+      
+      const response = await fetchWithTimeout(
+        `${API_CONFIG.API_BASE_URL}/artisans/${artisanId}`,
+        {
+          method: 'GET',
+          headers: {
+            ...DEFAULT_HEADERS,
+            'Authorization': `Bearer ${token}`
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Erreur API:', {
+          status: response.status,
+          error: errorData
+        });
+        throw new Error(errorData.error || 'Erreur lors de la récupération de l\'artisan');
+      }
+
+      const data = await response.json();
+      console.log('✅ Artisan récupéré avec succès:', {
+        nom: data.data?.nom,
+        success: data.success
+      });
+      
+      return data;
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.error('⏰ Timeout de la requête de récupération artisan');
+        throw new Error('Délai d\'attente dépassé. Vérifiez votre connexion internet.');
+      }
+      console.error('❌ Erreur récupération artisan:', error);
       throw error;
     }
   },

@@ -19,42 +19,75 @@ const NotificationsScreen = ({ navigation }: any) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userInfo, setUserInfo] = useState({
+    id: '',
+    nom: '',
+    email: '',
+    telephone: '',
+  });
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  // Récupérer l'ID de l'utilisateur connecté
+  // Récupérer les informations de l'utilisateur connecté
   useEffect(() => {
-    const getUserInfo = async () => {
-      try {
-        console.log('🔍 Récupération de l\'ID utilisateur...');
-        const userId = await storageService.getUserId();
-        console.log('👤 ID utilisateur récupéré:', userId);
-        if (userId) {
-          setUserId(userId);
-        } else {
-          console.warn('⚠️ Aucun ID utilisateur trouvé');
-        }
-      } catch (error) {
-        console.error('❌ Erreur lors de la récupération des informations utilisateur:', error);
-      }
-    };
-    getUserInfo();
+    loadUserInfo();
   }, []);
 
+  const loadUserInfo = async () => {
+    try {
+      console.log('🔍 Récupération des informations utilisateur...');
+      const token = await storageService.getAuthToken();
+      const role = await storageService.getUserRole();
+      const userId = await storageService.getUserId();
+      
+      if (token && role && userId) {
+        console.log('✅ Utilisateur connecté trouvé:', { userId, role });
+        setUserInfo({
+          id: userId,
+          nom: 'Utilisateur', // À remplacer par un appel API pour récupérer les vraies données
+          email: 'user@example.com',
+          telephone: '+33 6 12 34 56 78',
+        });
+        
+        // Charger les notifications une fois l'utilisateur identifié
+        await fetchNotifications(userId);
+      } else {
+        console.warn('⚠️ Aucun utilisateur connecté trouvé');
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors de la récupération des informations utilisateur:', error);
+      setLoading(false);
+    }
+  };
+
   // Récupérer les notifications
-  const fetchNotifications = async () => {
-    if (!userId) {
+  const fetchNotifications = async (userId?: string) => {
+    const targetUserId = userId || userInfo.id;
+    
+    if (!targetUserId) {
       console.warn('⚠️ Impossible de récupérer les notifications: userId manquant');
+      setLoading(false);
       return;
     }
     
-    console.log('🔔 Début de la récupération des notifications pour userId:', userId);
+    console.log('🔔 Début de la récupération des notifications pour userId:', targetUserId);
     
     try {
       setLoading(true);
-      const response = await notificationService.getNotifications(userId);
+      const response = await notificationService.getNotifications(targetUserId);
       console.log('✅ Réponse API reçue:', response);
-      setNotifications(response.data || []);
-      console.log('📊 Notifications mises à jour:', response.data?.length || 0);
+      
+      const notificationsData = response.data || [];
+      setNotifications(notificationsData);
+      
+      // Calculer le nombre de notifications non lues
+      const unreadNotifications = notificationsData.filter(notif => notif.statut === 'non_lu');
+      setUnreadCount(unreadNotifications.length);
+      
+      console.log('📊 Notifications mises à jour:', {
+        total: notificationsData.length,
+        unread: unreadNotifications.length
+      });
     } catch (error) {
       console.error('❌ Erreur lors de la récupération des notifications:', error);
       Alert.alert(
@@ -79,6 +112,9 @@ const NotificationsScreen = ({ navigation }: any) => {
             : notif
         )
       );
+      
+      // Mettre à jour le compteur de notifications non lues
+      setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Erreur lors du marquage comme lu:', error);
       Alert.alert(
@@ -91,14 +127,17 @@ const NotificationsScreen = ({ navigation }: any) => {
 
   // Marquer toutes les notifications comme lues
   const markAllAsRead = async () => {
-    if (!userId) return;
+    if (!userInfo.id) return;
     
     try {
-      await notificationService.markAllAsRead(userId);
+      await notificationService.markAllAsRead(userInfo.id);
       // Mettre à jour l'état local
       setNotifications(prev => 
         prev.map(notif => ({ ...notif, statut: 'lu' as const }))
       );
+      
+      // Réinitialiser le compteur de notifications non lues
+      setUnreadCount(0);
     } catch (error) {
       console.error('Erreur lors du marquage de toutes les notifications:', error);
       Alert.alert(
@@ -115,13 +154,6 @@ const NotificationsScreen = ({ navigation }: any) => {
     await fetchNotifications();
     setRefreshing(false);
   };
-
-  // Charger les notifications quand l'userId est disponible
-  useEffect(() => {
-    if (userId) {
-      fetchNotifications();
-    }
-  }, [userId]);
 
   // Obtenir l'icône selon le type de notification
   const getNotificationIcon = (type: string) => {
@@ -263,7 +295,12 @@ const NotificationsScreen = ({ navigation }: any) => {
         title="Notifications"
         showBack={true}
         onBack={() => navigation.goBack()}
-        showNotification={false}
+        showNotification={true}
+        notificationCount={unreadCount}
+        onNotificationPress={() => {
+          // Si on est déjà sur l'écran des notifications, on peut rafraîchir
+          onRefresh();
+        }}
       />
       {renderContent()}
     </View>
