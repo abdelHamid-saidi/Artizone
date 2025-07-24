@@ -6,16 +6,16 @@
 
 Artizone est composée de trois applications principales :
 
-- ** Application Mobile** (React Native + Expo) - Interface utilisateur pour les particuliers
-- ** Interface Web Admin** (React.js + Material-UI) - Dashboard d'administration
-- ** API Backend** (Node.js + Express + Sequelize) - API REST sécurisée
-- ** Base de données** (MySQL) - Gestion des données avec migrations
+- **Application Mobile** (React Native + Expo) - Interface utilisateur pour les particuliers
+- **Interface Web Admin** (React.js + Material-UI) - Dashboard d'administration
+- **API Backend** (Node.js + Express + Sequelize) - API REST sécurisée
+- **Base de données** (MySQL) - Gestion des données avec migrations
 
 ## Architecture du Projet
 
 ```
 Artizone/
-├── 📱 Mobile/                 # Application React Native
+├── Mobile/                 # Application React Native
 │   ├── src/
 │   │   ├── components/        # Composants réutilisables
 │   │   ├── screens/          # Écrans de l'application
@@ -23,19 +23,19 @@ Artizone/
 │   │   ├── services/         # Services API et stockage
 │   │   └── styles/           # Styles et thèmes
 │   └── assets/               # Images et ressources
-├── 🖥️ Web/                   # Interface d'administration
+├── Web/                   # Interface d'administration
 │   ├── src/
 │   │   ├── components/       # Composants UI
 │   │   ├── pages/           # Pages de l'application
 │   │   └── services/        # Services API
-├── 🔧 Api/                   # Backend Node.js
+├── Api/                   # Backend Node.js
 │   ├── controllers/          # Contrôleurs métier
 │   ├── models/              # Modèles Sequelize
 │   ├── routes/              # Routes API
 │   ├── middlewares/         # Middlewares (auth, validation)
 │   ├── services/            # Services externes (Stripe, Firebase)
 │   └── swagger/             # Documentation API
-└── 🗄️ Database/             # Gestion de la base de données
+└── Database/             # Gestion de la base de données
     ├── migrations/          # Migrations Sequelize
     ├── seeders/            # Données de test
     └── models/             # Modèles de données
@@ -72,33 +72,33 @@ Artizone/
 ## Fonctionnalités Principales
 
 ### Pour les Particuliers (Mobile)
--  **Inscription/Connexion** sécurisée
--  **Recherche d'artisans** par catégorie et localisation
--  **Consultation des profils** artisans avec avis et photos
--  **Réservation de services** avec calendrier
--  **Suivi des commandes** en temps réel
--  **Système d'avis** et notation
--  **Notifications push** pour les mises à jour
--  **Gestion du profil** utilisateur
--  **Historique des commandes**
+- **Inscription/Connexion** sécurisée
+- **Recherche d'artisans** par catégorie et localisation
+- **Consultation des profils** artisans avec avis et photos
+- **Réservation de services** avec calendrier
+- **Suivi des commandes** en temps réel
+- **Système d'avis** et notation
+- **Notifications push** pour les mises à jour
+- **Gestion du profil** utilisateur
+- **Historique des commandes**
 
 ### Pour les Administrateurs (Web)
--  **Dashboard** avec statistiques en temps réel
--  **Gestion des utilisateurs** (particuliers et artisans)
--  **Suivi des commandes** et paiements
--  **Modération des avis** et signalements
--  **Gestion des catégories** de services
--  **Statistiques** et rapports détaillés
+- **Dashboard** avec statistiques en temps réel
+- **Gestion des utilisateurs** (particuliers et artisans)
+- **Suivi des commandes** et paiements
+- **Modération des avis** et signalements
+- **Gestion des catégories** de services
+- **Statistiques** et rapports détaillés
 
 ### API Backend
--  **Authentification JWT** sécurisée
--  **Gestion des rôles** (particulier, artisan, admin)
--  **API RESTful** complète
--  **Validation des données** avec express-validator
--  **Rate limiting** pour la sécurité
--  **Documentation Swagger** interactive
--  **Intégration Stripe** pour les paiements
--  **Notifications Firebase** push
+- **Authentification JWT** sécurisée
+- **Gestion des rôles** (particulier, artisan, admin)
+- **API RESTful** complète
+- **Validation des données** avec express-validator
+- **Rate limiting** pour la sécurité
+- **Documentation Swagger** interactive
+- **Intégration Stripe** pour les paiements
+- **Notifications Firebase** push
 
 ## Installation et Configuration
 
@@ -250,4 +250,4 @@ L'API est documentée avec Swagger et accessible à :
 
 Ce projet est développé à des fins pédagogiques. Tous droits réservés © 2025.
 
-**Artizone** - Connecter les artisans et les particuliers, une commande à la fois ! 🛠️✨
+**Artizone** - Connecter les artisans et les particuliers, une commande à la fois !

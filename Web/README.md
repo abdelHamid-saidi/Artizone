@@ -1,70 +1,232 @@
-# Getting Started with Create React App
+# Artizone - Interface Web Admin
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Interface d'administration web pour la plateforme Artizone, développée avec React.js et Material-UI.
 
-## Available Scripts
+## Vue d'ensemble
 
-In the project directory, you can run:
+Cette interface web permet aux administrateurs de gérer la plateforme Artizone, de suivre les commandes, les utilisateurs et d'analyser les statistiques en temps réel.
 
-### `npm start`
+## Technologies Utilisées
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **React.js** - Framework frontend
+- **Material-UI** - Composants UI modernes
+- **React Router** - Navigation entre pages
+- **Recharts** - Graphiques et statistiques
+- **Axios** - Appels API
+- **Tailwind CSS** - Styling utilitaire
+- **JWT Decode** - Gestion des tokens d'authentification
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Installation
 
-### `npm test`
+### Prérequis
+- Node.js (v18 ou supérieur)
+- npm ou yarn
+- API Artizone en cours d'exécution
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Installation des dépendances
+```bash
+cd Web
+npm install
+```
 
-### `npm run build`
+### Configuration
+Créer un fichier `.env` dans le dossier `Web/` :
+```env
+REACT_APP_API_URL=http://localhost:3000
+REACT_APP_ADMIN_EMAIL=admin@artizone.com
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Démarrage
+```bash
+npm start
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+L'interface sera disponible sur `http://localhost:3001`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Fonctionnalités
 
-### `npm run eject`
+### Authentification
+- Connexion sécurisée pour les administrateurs
+- Gestion des sessions avec JWT
+- Protection des routes sensibles
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Dashboard
+- **Statistiques en temps réel** :
+  - Nombre total d'utilisateurs
+  - Commandes en cours
+  - Revenus générés
+  - Artisans actifs
+- **Graphiques interactifs** :
+  - Évolution des commandes
+  - Répartition par catégorie
+  - Performance des artisans
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Gestion des Utilisateurs
+- **Liste des particuliers** avec filtres et recherche
+- **Liste des artisans** avec statut et validation
+- **Détails complets** de chaque utilisateur
+- **Actions d'administration** :
+  - Activer/désactiver des comptes
+  - Modérer les profils
+  - Gérer les signalements
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Gestion des Commandes
+- **Vue d'ensemble** de toutes les commandes
+- **Filtres avancés** :
+  - Par statut (en cours, terminée, annulée)
+  - Par date
+  - Par artisan
+  - Par particulier
+- **Détails complets** de chaque commande
+- **Actions d'administration** :
+  - Valider des commandes
+  - Résoudre des litiges
+  - Suivre les paiements
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Gestion des Artisans
+- **Profils détaillés** des artisans
+- **Validation des comptes** artisan
+- **Gestion des services** proposés
+- **Suivi des performances** et avis
 
-## Learn More
+### Statistiques et Rapports
+- **Tableaux de bord** personnalisables
+- **Export de données** en CSV/PDF
+- **Analyses temporelles** des performances
+- **Rapports de modération**
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Interface Utilisateur
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Design System
+- **Material-UI** pour une interface cohérente
+- **Thème personnalisé** aux couleurs d'Artizone
+- **Responsive design** pour tous les écrans
+- **Accessibilité** conforme aux standards WCAG
 
-### Code Splitting
+### Composants Principaux
+- **Sidebar** - Navigation principale
+- **Topbar** - Actions rapides et notifications
+- **StatCards** - Métriques importantes
+- **DataTables** - Affichage des données
+- **Charts** - Visualisations graphiques
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Scripts Disponibles
 
-### Analyzing the Bundle Size
+```bash
+# Développement
+npm start              # Démarrage en mode développement
+npm run build          # Build de production
+npm test               # Exécuter les tests
+npm run eject          # Éjecter la configuration (irréversible)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+# Production
+npm run build          # Créer le build optimisé
+serve -s build         # Servir le build de production
+```
 
-### Making a Progressive Web App
+## Pages Principales
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### `/` - Page de Connexion
+- Formulaire d'authentification admin
+- Validation des identifiants
+- Redirection automatique après connexion
 
-### Advanced Configuration
+### `/dashboard` - Tableau de Bord
+- Vue d'ensemble des métriques
+- Graphiques de performance
+- Actions rapides
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### `/commandes` - Gestion des Commandes
+- Liste de toutes les commandes
+- Filtres et recherche
+- Actions en lot
 
-### Deployment
+### `/commandes/:id` - Détail d'une Commande
+- Informations complètes
+- Historique des actions
+- Actions d'administration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### `/utilisateurs` - Gestion des Utilisateurs
+- Liste des particuliers et artisans
+- Filtres par statut et type
+- Actions de modération
 
-### `npm run build` fails to minify
+### `/artisans` - Gestion des Artisans
+- Profils détaillés
+- Validation des comptes
+- Suivi des performances
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### `/signalements` - Modération
+- Signalements en attente
+- Actions de modération
+- Historique des décisions
+
+## Sécurité
+
+### Authentification
+- **JWT tokens** pour l'authentification
+- **Expiration automatique** des sessions
+- **Protection des routes** sensibles
+
+### Autorisations
+- **Rôles d'administrateur** avec permissions
+- **Validation côté client** et serveur
+- **Audit trail** des actions d'administration
+
+## Tests
+
+### Tests Unitaires
+```bash
+npm test
+```
+
+### Tests d'Intégration
+```bash
+npm run test:integration
+```
+
+## Build et Déploiement
+
+### Build de Production
+```bash
+npm run build
+```
+
+### Variables d'Environnement
+```env
+REACT_APP_API_URL=https://api.artizone.com
+REACT_APP_ENV=production
+REACT_APP_VERSION=1.0.0
+```
+
+## Dépannage
+
+### Problèmes Courants
+
+1. **Erreur de connexion API**
+   - Vérifier que l'API est en cours d'exécution
+   - Contrôler l'URL dans `.env`
+
+2. **Problèmes de build**
+   - Nettoyer le cache : `npm run build -- --reset-cache`
+   - Vérifier les dépendances : `npm install`
+
+3. **Erreurs de CORS**
+   - Vérifier la configuration CORS de l'API
+   - Contrôler les origines autorisées
+
+## Contribution
+
+1. Fork le projet
+2. Créer une branche feature
+3. Commiter les changements
+4. Pousser vers la branche
+5. Ouvrir une Pull Request
+
+## Licence
+
+Ce projet fait partie d'Artizone. Tous droits réservés © 2025.
+
+---
+
+**Interface Admin Artizone** - Gérer la plateforme avec efficacité !
