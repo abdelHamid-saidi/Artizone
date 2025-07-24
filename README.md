@@ -1,17 +1,17 @@
-# 🏗️ Artizone - Plateforme de Mise en Relation Artisans/Particuliers
+# Artizone - Plateforme de Mise en Relation Artisans/Particuliers
 
 **Artizone** est une plateforme complète de mise en relation entre particuliers et artisans locaux, développée avec une architecture moderne et scalable.
 
-## 📋 Vue d'ensemble
+## Vue d'ensemble
 
 Artizone est composée de trois applications principales :
 
-- **📱 Application Mobile** (React Native + Expo) - Interface utilisateur pour les particuliers
-- **🖥️ Interface Web Admin** (React.js + Material-UI) - Dashboard d'administration
-- **🔧 API Backend** (Node.js + Express + Sequelize) - API REST sécurisée
-- **🗄️ Base de données** (MySQL) - Gestion des données avec migrations
+- ** Application Mobile** (React Native + Expo) - Interface utilisateur pour les particuliers
+- **🖥 Interface Web Admin** (React.js + Material-UI) - Dashboard d'administration
+- ** API Backend** (Node.js + Express + Sequelize) - API REST sécurisée
+- **🗄 Base de données** (MySQL) - Gestion des données avec migrations
 
-## 🏗️ Architecture du Projet
+## Architecture du Projet
 
 ```
 Artizone/
@@ -41,7 +41,7 @@ Artizone/
     └── models/             # Modèles de données
 ```
 
-## 🚀 Technologies Utilisées
+## Technologies Utilisées
 
 ### Frontend Mobile
 - **React Native** avec **Expo** pour le développement cross-platform
@@ -72,35 +72,35 @@ Artizone/
 ## 📊 Fonctionnalités Principales
 
 ### Pour les Particuliers (Mobile)
-- ✅ **Inscription/Connexion** sécurisée
-- ✅ **Recherche d'artisans** par catégorie et localisation
-- ✅ **Consultation des profils** artisans avec avis et photos
-- ✅ **Réservation de services** avec calendrier
-- ✅ **Suivi des commandes** en temps réel
-- ✅ **Système d'avis** et notation
-- ✅ **Notifications push** pour les mises à jour
-- ✅ **Gestion du profil** utilisateur
-- ✅ **Historique des commandes**
+-  **Inscription/Connexion** sécurisée
+-  **Recherche d'artisans** par catégorie et localisation
+-  **Consultation des profils** artisans avec avis et photos
+-  **Réservation de services** avec calendrier
+-  **Suivi des commandes** en temps réel
+-  **Système d'avis** et notation
+-  **Notifications push** pour les mises à jour
+-  **Gestion du profil** utilisateur
+-  **Historique des commandes**
 
 ### Pour les Administrateurs (Web)
-- ✅ **Dashboard** avec statistiques en temps réel
-- ✅ **Gestion des utilisateurs** (particuliers et artisans)
-- ✅ **Suivi des commandes** et paiements
-- ✅ **Modération des avis** et signalements
-- ✅ **Gestion des catégories** de services
-- ✅ **Statistiques** et rapports détaillés
+-  **Dashboard** avec statistiques en temps réel
+-  **Gestion des utilisateurs** (particuliers et artisans)
+-  **Suivi des commandes** et paiements
+-  **Modération des avis** et signalements
+-  **Gestion des catégories** de services
+-  **Statistiques** et rapports détaillés
 
 ### API Backend
-- ✅ **Authentification JWT** sécurisée
-- ✅ **Gestion des rôles** (particulier, artisan, admin)
-- ✅ **API RESTful** complète
-- ✅ **Validation des données** avec express-validator
-- ✅ **Rate limiting** pour la sécurité
-- ✅ **Documentation Swagger** interactive
-- ✅ **Intégration Stripe** pour les paiements
-- ✅ **Notifications Firebase** push
+-  **Authentification JWT** sécurisée
+-  **Gestion des rôles** (particulier, artisan, admin)
+-  **API RESTful** complète
+-  **Validation des données** avec express-validator
+-  **Rate limiting** pour la sécurité
+-  **Documentation Swagger** interactive
+-  **Intégration Stripe** pour les paiements
+-  **Notifications Firebase** push
 
-## 🛠️ Installation et Configuration
+## Installation et Configuration
 
 ### Prérequis
 - **Node.js** (v18 ou supérieur)
@@ -205,7 +205,7 @@ npm start
 
 L'interface admin sera disponible sur `http://localhost:3001`
 
-## 📱 Utilisation
+## Utilisation
 
 ### Application Mobile
 1. Scannez le QR code avec l'application Expo Go
@@ -219,7 +219,7 @@ L'interface admin sera disponible sur `http://localhost:3001`
 2. Connectez-vous avec les identifiants admin
 3. Gérez les utilisateurs, commandes et statistiques
 
-## 📚 Documentation API
+## Documentation API
 
 L'API est documentée avec Swagger et accessible à :
 - **URL** : `http://localhost:3000/api-docs`
@@ -231,7 +231,7 @@ L'API est documentée avec Swagger et accessible à :
   - `/api/paiements` - Gestion des paiements
   - `/api/avis` - Gestion des avis
 
-## 🔒 Sécurité
+## Sécurité
 
 - **Authentification JWT** avec expiration
 - **Hachage des mots de passe** avec bcryptjs
@@ -241,12 +241,12 @@ L'API est documentée avec Swagger et accessible à :
 - **Helmet** pour les en-têtes de sécurité
 - **Variables d'environnement** pour les secrets
 
-## 👥 Équipe de Développement
+## Équipe de Développement
 
 - **SAIDI Abdelhamid** – Développeur Full-stack / Mobile
 - **KHINOUCHE Mehdi** – Développeur Full-stack / Mobile
 
-## 📄 Licence
+## Licence
 
 Ce projet est développé à des fins pédagogiques. Tous droits réservés © 2025.
 
