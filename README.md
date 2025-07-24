@@ -7,9 +7,9 @@
 Artizone est composée de trois applications principales :
 
 - ** Application Mobile** (React Native + Expo) - Interface utilisateur pour les particuliers
-- **🖥 Interface Web Admin** (React.js + Material-UI) - Dashboard d'administration
+- ** Interface Web Admin** (React.js + Material-UI) - Dashboard d'administration
 - ** API Backend** (Node.js + Express + Sequelize) - API REST sécurisée
-- **🗄 Base de données** (MySQL) - Gestion des données avec migrations
+- ** Base de données** (MySQL) - Gestion des données avec migrations
 
 ## Architecture du Projet
 
@@ -69,7 +69,7 @@ Artizone/
 - **Swagger** pour la documentation API
 - **Helmet** et **CORS** pour la sécurité
 
-## 📊 Fonctionnalités Principales
+## Fonctionnalités Principales
 
 ### Pour les Particuliers (Mobile)
 -  **Inscription/Connexion** sécurisée
