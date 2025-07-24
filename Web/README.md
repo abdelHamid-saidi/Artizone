@@ -6,6 +6,10 @@ Interface d'administration web pour la plateforme Artizone, développée avec Re
 
 Cette interface web permet aux administrateurs de gérer la plateforme Artizone, de suivre les commandes, les utilisateurs et d'analyser les statistiques en temps réel.
 
+## Capture d'écran
+
+![Interface Web Admin](../images/web.png)
+
 ## Technologies Utilisées
 
 - **React.js** - Framework frontend

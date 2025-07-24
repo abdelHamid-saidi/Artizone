@@ -6,6 +6,10 @@ Application mobile React Native pour les particuliers de la plateforme Artizone,
 
 Cette application mobile permet aux particuliers de rechercher des artisans, réserver des services, suivre leurs commandes et gérer leur profil utilisateur.
 
+## Capture d'écran
+
+![Application Mobile Artizone](../images/mobile.png)
+
 ## Technologies Utilisées
 
 - **React Native** - Framework mobile cross-platform

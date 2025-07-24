@@ -10,6 +10,10 @@ Ce module gère toute la logique de base de données pour Artizone, incluant :
 - **Modèles Sequelize** pour l'ORM
 - **Configuration** multi-environnement
 
+## Architecture UML
+
+![Diagramme UML de la base de données](../UML.png)
+
 ## Technologies Utilisées
 
 - **MySQL** - Base de données relationnelle
