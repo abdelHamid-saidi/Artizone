@@ -41,19 +41,11 @@ Artizone/
     └── models/             # Modèles de données
 ```
 
-## Captures d'écran
-
-### Interface Mobile
-![Application Mobile Artizone](images/mobile.png)
-
 ### Interface Web Admin
 ![Interface Web Admin](images/web.png)
 
-### Architecture UML
-![Diagramme UML](UML.png)
-
-### Processus de développement
-![Processus de développement](Prosses.png)
+### Interface Mobile
+![Application Mobile Artizone](images/mobile.png)
 
 ## Technologies Utilisées
 
