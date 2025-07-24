@@ -219,32 +219,6 @@ L'interface admin sera disponible sur `http://localhost:3001`
 2. Connectez-vous avec les identifiants admin
 3. Gérez les utilisateurs, commandes et statistiques
 
-## 🔧 Scripts Utiles
-
-### API Backend
-```bash
-npm run dev          # Démarrage en mode développement
-npm start            # Démarrage en production
-npm run db:migrate   # Exécuter les migrations
-npm run db:seed      # Insérer les données de test
-npm run check-consistency  # Vérifier la cohérence des données
-```
-
-### Application Mobile
-```bash
-npm start            # Démarrage du serveur Expo
-npm run android      # Lancer sur Android
-npm run ios          # Lancer sur iOS
-npm run get-ip       # Obtenir l'IP locale
-```
-
-### Interface Web
-```bash
-npm start            # Démarrage en mode développement
-npm run build        # Build de production
-npm test             # Exécuter les tests
-```
-
 ## 📚 Documentation API
 
 L'API est documentée avec Swagger et accessible à :
@@ -267,14 +241,6 @@ L'API est documentée avec Swagger et accessible à :
 - **Helmet** pour les en-têtes de sécurité
 - **Variables d'environnement** pour les secrets
 
-## 🧪 Tests et Qualité
-
-Le projet inclut plusieurs scripts de test :
-- **Vérification de cohérence** des données
-- **Tests des associations** entre modèles
-- **Tests des notifications** Firebase
-- **Tests de l'API** de profil
-
 ## 👥 Équipe de Développement
 
 - **SAIDI Abdelhamid** – Développeur Full-stack / Mobile
@@ -283,21 +249,5 @@ Le projet inclut plusieurs scripts de test :
 ## 📄 Licence
 
 Ce projet est développé à des fins pédagogiques. Tous droits réservés © 2025.
-
-## 🤝 Contribution
-
-1. Fork le projet
-2. Créez une branche feature (`git checkout -b feature/AmazingFeature`)
-3. Committez vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrez une Pull Request
-
-## 📞 Support
-
-Pour toute question ou problème :
-- Ouvrez une issue sur GitHub
-- Contactez l'équipe de développement
-
----
 
 **Artizone** - Connecter les artisans et les particuliers, une commande à la fois ! 🛠️✨
