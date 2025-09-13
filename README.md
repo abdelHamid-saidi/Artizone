@@ -1,6 +1,6 @@
 # Artizone - Plateforme de Mise en Relation Artisans/Particuliers
 
-**Artizone** est une plateforme complète de mise en relation entre particuliers et artisans locaux, développée avec une architecture moderne et scalable.
+**Artizone** est une plateformede mise en relation entre particuliers et artisans locaux.
 
 ## Vue d'ensemble
 
